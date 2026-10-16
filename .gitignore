@@ -1,0 +1,3 @@
+# 打包产物（npm pack 的 .tgz 不入库）
+*.tgz
+node_modules/
