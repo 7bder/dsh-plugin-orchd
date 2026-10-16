@@ -29,13 +29,19 @@ No project configuration — the plugin derives the project from the session.
 DSH 网页版（`dsh web`）：
 
 ```sh
-dsh plugin --profile web add https://github.com/7bder/dsh-plugin-orchd/releases/download/v0.1.0/dsh-plugin-orchd-0.1.0.tgz
+dsh plugin --profile web add https://github.com/7bder/dsh-plugin-orchd/releases/latest/download/dsh-plugin-orchd.tgz
+```
+
+从源码装（不走 Release 资产，等价）：
+
+```sh
+dsh plugin --profile web add github:7bder/dsh-plugin-orchd
 ```
 
 DSH Desktop 用的是 `desktop` profile，把上面命令里的 `--profile web` 换成 `--profile desktop` 即可。
 装好后重启 DSH（宿主侧模块不热替换）：会话 header 角落出现开关，右侧栏出现「orchd 任务」页。
 
-> 尚未发布到 npm；已收录进插件市场后也可以直接搜索安装。
+> npm 包（`dsh-plugin-orchd`）稍后发布；已被插件市场收录后也可以直接搜索安装。
 
 ## 前置条件
 
