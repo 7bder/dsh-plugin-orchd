@@ -1,0 +1,47 @@
+{
+  "name": "dsh-plugin-orchd",
+  "version": "0.1.0",
+  "description": "Read-only orchd panel for the DSH right sidebar: task board, dependency graph, ideas and review timeline for the project of the current session. · 把 orchd 项目状态带进 DSH 右侧栏的只读面板。",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/7bder/dsh-plugin-orchd.git"
+  },
+  "homepage": "https://github.com/7bder/dsh-plugin-orchd#readme",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "dsh",
+    "orchd",
+    "panel",
+    "task-board",
+    "dependency-graph",
+    "read-only"
+  ],
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "client",
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  }
+}

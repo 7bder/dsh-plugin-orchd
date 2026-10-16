@@ -1,0 +1,15 @@
+# dsh-plugin-orchd 的 bundle patch：只插入一行宿主条目。
+#
+# 插件配置项见 docs/02-设计方案.md 第 11 节；这里全部走默认值。
+- insert:
+    - id: orchd-tasks
+      name: dsh-plugin-orchd
+      config:
+        pythonPath: null        # null = 自动探测（候选顺序见 lib/python.js）
+        requestTimeoutMs: 20000
+        cacheTtlMs: 5000
+        pollTtlMs: 30000
+        detectTtlMs: 10000
+        maxProjectContexts: 8
+        orchdCoreRepo: null     # null = 用插件内默认仓库地址
+        allowRoots: []          # 调试用白名单；空 = 不额外收敛
