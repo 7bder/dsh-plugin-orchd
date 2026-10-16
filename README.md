@@ -27,21 +27,26 @@ No project configuration — the plugin derives the project from the session.
 ## 安装
 
 ```sh
-# DSH 网页版（dsh web）
-dsh plugin --profile web add github:7bder/dsh-plugin-orchd
+# 推荐：npm 包
+dsh plugin --profile web add dsh-plugin-orchd
 
 # DSH Desktop：用应用自带的终端（欢迎页里那个），**不要**加 --profile
-dsh plugin add github:7bder/dsh-plugin-orchd
+dsh plugin add dsh-plugin-orchd
+```
+
+没有 npm 也能从源码装（被市场收录前的等价路径）：
+
+```sh
+dsh plugin --profile web add github:7bder/dsh-plugin-orchd
 ```
 
 Desktop 的 `desktop` profile 由应用托管：普通 `dsh plugin --profile desktop ...` 会被 CLI 直接拒（
 `profile "desktop" is managed exclusively by the Electron application`），应用自带终端里不带 `--profile`
 的命令才改得到它。装好后**重启 DSH**——宿主侧模块不热替换：会话 header 角落出现开关，右侧栏出现「orchd 任务」页。
 
-> 被插件市场收录后可以直接在设置里搜索安装。npm 包（`dsh-plugin-orchd`）稍后发布。
-> Release 页也挂了 tarball 资产，但那条路依赖 `github.com/release-assets`（在部分网络不稳），
-> 且 pnpm 11 对「URL tarball」的 lockfile 完整性要求更严（可能报 `ERR_PNPM_MISSING_TARBALL_INTEGRITY`），
-> 所以先用上面的源码装法；tarball 只作归档与手动备用。
+> 被插件市场收录后可以在设置里搜索一键安装。Release 页另有 tarball 资产，但那条路依赖
+> `github.com/release-assets`（在部分网络不稳），且 pnpm 11 对「URL tarball」的 lockfile 完整性要求更严
+> （可能报 `ERR_PNPM_MISSING_TARBALL_INTEGRITY`），所以只作归档与手动备用。
 
 ## 前置条件
 
