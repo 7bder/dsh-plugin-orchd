@@ -40,6 +40,14 @@ dsh plugin add dsh-plugin-orchd
 dsh plugin --profile web add github:7bder/dsh-plugin-orchd
 ```
 
+## 截图
+
+![看板：状态条即筛选、搜索、排序、任务列表](assets/screenshot-1.png)
+
+![依赖图：分层 DAG、悬空依赖如实标注、异常提示](assets/screenshot-2.png)
+
+![任务详情：验收标准、可复制的验证命令、依赖与审查时间线](assets/screenshot-3.png)
+
 Desktop 的 `desktop` profile 由应用托管：普通 `dsh plugin --profile desktop ...` 会被 CLI 直接拒（
 `profile "desktop" is managed exclusively by the Electron application`），应用自带终端里不带 `--profile`
 的命令才改得到它。装好后**重启 DSH**——宿主侧模块不热替换：会话 header 角落出现开关，右侧栏出现「orchd 任务」页。
