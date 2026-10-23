@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-orchd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read-only orchd panel for the DSH right sidebar: task board, dependency graph, ideas and review timeline for the project of the current session. · 把 orchd 项目状态带进 DSH 右侧栏的只读面板。",
   "license": "MIT",
   "repository": {

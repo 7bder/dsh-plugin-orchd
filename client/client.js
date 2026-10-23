@@ -200,7 +200,7 @@ window.__ModuleLoader__.load({
       ideasTitle: '想法',
       ideasArchived: '归档',
       ideasArchivedUnit: '条',
-      ideasArchivedHint: '归档只计数，不加载全文；已立任务 / 已丢弃的条目都到这里了',
+      ideasArchivedHint: '归档只计数，不加载全文；已立任务 / 已覆盖 / 人工 close 的条目都到这里了',
       ideasArchivedHistorical: '归档保留原文，因此这里的 status 是历史值（可能仍写着 pending）',
       ideasEngineUnsupported: '本项目的 orchd 引擎没有 ideas 子命令（旧版本）：下面这份列表与状态是直接读 IDEAS.md 得到的，没有引擎清单可交叉核对。升级引擎后会自动启用交叉核对。',
       ideasBadgeHint: '在等你裁决的想法数（论证中 + 待补充）',
@@ -211,12 +211,12 @@ window.__ModuleLoader__.load({
       ideasOnlyInMarkdown: '仅存在于 IDEAS.md（引擎清单里没有）',
       ideasOwnerUser: '等你裁决',
       ideasOwnerAgent: '等 agent 拆解',
-      ideasOwnerNone: '已离队',
+      ideasOwnerNone: '无需等待',
       ideasConverted: '已转成的任务',
       ideasConvertedHint: '定义层里 source 指向这条想法的任务',
       ideasConvertedTasks: '个任务',
       ideasStatusUnknown: '未知状态',
-      ideasStatusDropped: '已丢弃',
+      ideasArchiveLegacyDropped: '历史已放弃（dropped）',
       ideasUntasked: '未立任务',
       ideasNoId: '无法对照',
       ideasDetail: '正文',
@@ -224,15 +224,15 @@ window.__ModuleLoader__.load({
       ideasExtra: '未知字段',
       ideasDetailPath: '详档',
       ideasCommands: '你可以执行的命令（id 已填好）',
-      ideasCommandsHint: '本面板只读：不提供 propose / confirm / drop / archive 按钮，只帮你复制命令。这些命令按当前状态给出；在途任务引用期间引擎会拒绝搬走（source_live_reference）。',
-      ideasCommandLegend: 'append = 往这条想法追加一条带时间戳的追记（不动原正文、不改状态，就是「追加记录」里那几行）；confirm / drop / archive = 你对这条想法的裁决（仅用户可执行）。括号里的 <…> 是占位符，换成你自己要写的字。',
+      ideasCommandsHint: '本面板只读：不提供 propose / confirm / close 按钮，只帮你复制命令。这些命令按当前状态给出；在途任务引用期间引擎会拒绝搬走（source_live_reference）。',
+      ideasCommandLegend: 'append = 往这条想法追加一条带时间戳的追记（不动原正文、不改状态，就是「追加记录」里那几行）；confirm / close = 你对这条想法的裁决（仅用户可执行；close 一律归档并留下裁决理由）。括号里的 <…> 是占位符，换成你自己要写的字。',
       ideasPropose: '新建想法（引擎侧的正式通道）',
       ideasProposeHint: '新建时还没有 id，所以标题里要自己声明一个（形如「标题（id: my-idea）」）。',
       iStudy: '论证中',
       iQuestioning: '待补充',
       iPending: '待拆解',
-      iTaskified: '已转任务',
-      iDropped: '已丢弃',
+      iConverted: '已转任务',
+      iCovered: '已覆盖',
       // ── FR-7 依赖图（P2b）──
       graphCounts: '节点 {n} · 边 {e}',
       graphIncludeTerminal: '含终态任务',
@@ -404,7 +404,7 @@ window.__ModuleLoader__.load({
       ideasTitle: 'Ideas',
       ideasArchived: 'Archived',
       ideasArchivedUnit: '',
-      ideasArchivedHint: 'Archived entries are counted only; entries that became tasks or were dropped live here',
+      ideasArchivedHint: 'Archived entries are counted only; entries that became tasks, were covered, or were closed live here',
       ideasArchivedHistorical: 'The archive keeps the original text, so these statuses are historical',
       ideasEngineUnsupported: "This project's orchd engine has no ideas subcommand (older build): the list and statuses below are read straight from IDEAS.md, with no engine ledger to cross-check. Cross-checking turns on automatically after an engine upgrade.",
       ideasBadgeHint: 'Ideas waiting on you (studying + needs info)',
@@ -415,12 +415,12 @@ window.__ModuleLoader__.load({
       ideasOnlyInMarkdown: 'Only present in IDEAS.md (missing from the engine list)',
       ideasOwnerUser: 'waiting on you',
       ideasOwnerAgent: 'waiting on an agent',
-      ideasOwnerNone: 'left the queue',
+      ideasOwnerNone: 'no action pending',
       ideasConverted: 'Tasks created from this idea',
       ideasConvertedHint: 'Definition-layer tasks whose source points at this idea',
       ideasConvertedTasks: 'tasks',
       ideasStatusUnknown: 'unknown status',
-      ideasStatusDropped: 'dropped',
+      ideasArchiveLegacyDropped: 'historically dropped',
       ideasUntasked: 'never tasked',
       ideasNoId: 'no id',
       ideasDetail: 'Body',
@@ -428,15 +428,15 @@ window.__ModuleLoader__.load({
       ideasExtra: 'Unrecognised fields',
       ideasDetailPath: 'Detail doc',
       ideasCommands: 'Commands you can run (id already filled in)',
-      ideasCommandsHint: 'This panel is read-only: no propose / confirm / drop / archive buttons — it only copies commands. They match the current status; while in-flight tasks reference the entry the engine refuses to move it (source_live_reference).',
-      ideasCommandLegend: 'append = add one timestamped note to this idea (it never touches the original body or status — these are the lines shown under "Appended notes"); confirm / drop / archive = your decision on this idea (user-only). The <…> parts are placeholders — replace them with your own text.',
+      ideasCommandsHint: 'This panel is read-only: no propose / confirm / close buttons — it only copies commands. They match the current status; while in-flight tasks reference the entry the engine refuses to move it (source_live_reference).',
+      ideasCommandLegend: 'append = add one timestamped note to this idea (it never touches the original body or status — these are the lines shown under "Appended notes"); confirm / close = your decision on this idea (user-only; close always archives the entry with your reason). The <…> parts are placeholders — replace them with your own text.',
       ideasPropose: 'New idea (the engine-side channel)',
       ideasProposeHint: 'A new idea has no id yet, so declare one in the title (e.g. "Title (id: my-idea)").',
       iStudy: 'Studying',
       iQuestioning: 'Needs info',
       iPending: 'Awaiting breakdown',
-      iTaskified: 'Turned into tasks',
-      iDropped: 'Dropped',
+      iConverted: 'Turned into tasks',
+      iCovered: 'Covered',
       graphCounts: '{n} nodes · {e} edges',
       graphIncludeTerminal: 'Include finished tasks',
       graphIncludeTerminalHint: 'Also draw completed / cancelled tasks (by default only active tasks and their direct neighbours are drawn)',
@@ -2250,26 +2250,44 @@ window.__ModuleLoader__.load({
 
     // ── FR-13 想法看板 ────────────────────────────────────────────────────
     /**
-     * 想法状态顺序（引擎顺序：study → questioning → pending → taskified → dropped）。
-     * 统计条**固定**展示这 5 个（0 值可点），这样三分区在界面上闭合：
-     *   `全部 = 活跃 + 已转任务 + 已丢弃`（活跃 = 论证中 + 待补充 + 待拆解）。
+     * 想法展示桶顺序（4 个引擎状态 + 派生桶 `converted`）。
+     * 统计条**固定**展示这些（0 值可点），这样三分区在界面上闭合：
+     *   `全部 = 活跃 + 已转任务 + 已覆盖`（活跃 = 论证中 + 待补充 + 待拆解）。
      * 集合以宿主下发的 `activeStatuses` 为准，这里只是同源兜底。
+     *
+     * 引擎 2026-10-23 调整：`taskified` 正名为 `covered`（撞车并入已有任务、待归档），
+     * `dropped` 从活跃台账下线（放弃改走 `idea close --reason`）。`converted` 是
+     * **派生桶**（任务定义层 source/additional_sources 指向该想法），不是引擎状态。
      */
-    const IDEA_STATUSES_UI = ['study', 'questioning', 'pending', 'taskified', 'dropped']
+    const IDEA_STATUSES_UI = ['study', 'questioning', 'pending', 'converted', 'covered']
 
     /**
-     * 想法状态 → i18n 键。
+     * 想法展示桶 → i18n 键。
      *
-     * ⚠ 这 5 个状态是**引擎定义的**（`study` / `questioning` / `pending` / `taskified` / `dropped`），
-     * 不得自造。引擎将来加了新状态时解析层会把 `status` 置 null 并保留原文，
-     * 这里显示「未知状态 + 原文」，不崩、不猜。
+     * ⚠ 前 4 个是**引擎定义的**（`study` / `questioning` / `pending` / `covered`），
+     * 不得自造；`converted` 是本插件按定义层溯源派生的展示桶。引擎将来加了新状态时
+     * 解析层会把 `status` 置 null 并保留原文，这里显示「未知状态 + 原文」，不崩、不猜。
      */
     const IDEA_STATUS_I18N = {
       study: 'iStudy',
       questioning: 'iQuestioning',
       pending: 'iPending',
-      taskified: 'iTaskified',
-      dropped: 'iDropped'
+      converted: 'iConverted',
+      covered: 'iCovered'
+    }
+
+    /** 条目的展示桶：派生桶优先，其次才是引擎字面状态。 */
+    function ideaDisplayStatus(entry) {
+      if (entry === null || entry === undefined) return null
+      if (typeof entry.displayStatus === 'string') return entry.displayStatus
+      if (entry.converted === true) return 'converted'
+      return entry.status ?? null
+    }
+
+    /** 展示桶文案；未知状态显式说「未知」，不猜、不崩。 */
+    function ideaStatusText(entry, t) {
+      const status = ideaDisplayStatus(entry)
+      return status === null ? t('ideasStatusUnknown') : t(IDEA_STATUS_I18N[status] ?? 'ideasStatusUnknown')
     }
 
     /** 想法的「在等谁」文案（FR-13.4：**不得只给状态码**）。 */
@@ -2293,29 +2311,30 @@ window.__ModuleLoader__.load({
     /**
      * 想法列表（FR-13.1/13.3/13.4）。
      *
-     * 与任务列表用**同一套**状态条筛选组件（FR-13.6），只是标签换成 5 个想法状态；
+     * 与任务列表用**同一套**状态条筛选组件（FR-13.6），只是标签换成想法展示桶；
      * 徽章数在调用方（视图切换）显示，这里不重复。
      */
     function IdeasBoard({ data, filters, setFilters, t, onOpen }) {
       const entries = data?.entries ?? []
       const counts = data?.counts?.byStatus ?? {}
-      // ⚠ 统计条只放**活跃层可能出现的状态**（study/questioning/pending）。
-      // 统计条固定展示全部 5 个想法状态（0 值可点），以便三分区在界面上**闭合**：
-      //   全部 = 活跃 + 已转任务 + 已丢弃      （活跃 = 论证中 + 待补充 + 待拆解）
+      // 统计条固定展示全部展示桶（4 个引擎状态 + 派生桶 converted，0 值可点），
+      // 以便三分区在界面上**闭合**：
+      //   全部 = 活跃 + 已转任务 + 已覆盖      （活跃 = 论证中 + 待补充 + 待拆解）
       // 集合由宿主下发（`activeStatuses`），客户端只做兜底。
       const labels = Array.isArray(data?.activeStatuses) && data.activeStatuses.length > 0
         ? data.activeStatuses
         : IDEA_STATUSES_UI
-      // 归档分组：与任务池对照得出（已转任务 / 已丢弃 / 未立任务 / 无 id）
+      // 归档分组：与任务池对照得出（已转任务 / 历史已放弃 / 未立任务 / 无 id）
       const archived = data?.archived ?? {}
       const archivedTotal = data?.archivedCount ?? 0
 
       const filtered = entries.filter((entry) => {
         const mode = filters.mode
+        const display = ideaDisplayStatus(entry)
         if (mode === 'active') {
-          // 想法没有「终态」概念，用「已离队」等价表达：active = 仍在队里
-          if (entry.status === 'taskified' || entry.status === 'dropped') return false
-        } else if (mode !== 'all' && entry.status !== mode) {
+          // 活跃 = 仍待处理：已转任务（converted）与已覆盖（covered）都不算
+          if (display === 'converted' || display === 'covered') return false
+        } else if (mode !== 'all' && display !== mode) {
           return false
         }
         if ((filters.keyword ?? '') !== '') {
@@ -2327,10 +2346,10 @@ window.__ModuleLoader__.load({
 
       const summaryForStrip = {
         total: data?.counts?.total ?? entries.length,
-        // 「活跃」用宿主给的数（已扣除定义层已立任务的条目）；拿不到时退回本地口径
+        // 「活跃」用宿主给的数（已扣除已转任务 / 已覆盖）；拿不到时退回本地口径
         active: typeof data?.active === 'number'
           ? data.active
-          : entries.filter((entry) => entry.status !== 'taskified' && entry.status !== 'dropped').length,
+          : entries.filter((entry) => !['converted', 'covered'].includes(ideaDisplayStatus(entry))).length,
         ...counts,
         source: 'engine'
       }
@@ -2383,8 +2402,8 @@ window.__ModuleLoader__.load({
               archivedTotal === 0
                 ? `${t('ideasArchived')} 0 ${t('ideasArchivedUnit')}`
                 : `${t('ideasArchived')} ${archivedTotal}${t('ideasArchivedUnit')}（${[
-                    `${t('ideasConverted')} ${archived.taskified ?? 0}`,
-                    `${t('ideasStatusDropped')} ${archived.dropped ?? 0}`,
+                    `${t('ideasConverted')} ${archived.converted ?? 0}`,
+                    `${t('ideasArchiveLegacyDropped')} ${archived.legacyDropped ?? 0}`,
                     `${t('ideasUntasked')} ${archived.untasked ?? 0}`,
                     `${t('ideasNoId')} ${archived.noId ?? 0}`
                   ].join(' · ')}）`),
@@ -2448,7 +2467,7 @@ window.__ModuleLoader__.load({
         React.createElement('span', { key: 'm', style: styles.rowMeta }, [
           React.createElement('span', { key: 's', style: { ...styles.statusTag, color: ideaOwnerToken(entry.owner) } }, [
             React.createElement('span', { key: 'dd', style: styles.chipDot }),
-            React.createElement('span', { key: 'l' }, entry.status === null ? t('ideasStatusUnknown') : t(IDEA_STATUS_I18N[entry.status] ?? 'ideasStatusUnknown')),
+            React.createElement('span', { key: 'l' }, ideaStatusText(entry, t)),
             React.createElement('span', { key: 'o' }, ` · ${ideaOwnerText(entry.owner, t)}`)
           ]),
           // 已转任务：由定义层溯源推出（status 只表达摄入/裁决态，不表达「已立任务」），顺带给出任务数量
@@ -2519,7 +2538,7 @@ window.__ModuleLoader__.load({
               style: { ...styles.statusTag, color: ideaOwnerToken(entry.owner) }
             }, [
               React.createElement('span', { key: 'd', style: styles.chipDot }),
-              React.createElement('span', { key: 'l' }, entry.status === null ? t('ideasStatusUnknown') : t(IDEA_STATUS_I18N[entry.status] ?? 'ideasStatusUnknown')),
+              React.createElement('span', { key: 'l' }, ideaStatusText(entry, t)),
               React.createElement('span', { key: 'o' }, ` · ${ideaOwnerText(entry.owner, t)}`)
             ])
           ]),
@@ -2581,11 +2600,13 @@ window.__ModuleLoader__.load({
      *
      * 命令形态来自引擎实测（`orchd idea <c> --help`）：
      *   `append --id <id> --notes …`（按 `- id:` 精确值定位）
-     *   `confirm/drop --title <title>`、`archive --title <title> --reason …`
-     *   —— 后三者的 `--title` 支持「裸 slug」，而裸 slug 与 `- id:` 精确相等，故直接用 id。
+     *   `confirm --title <title>`、`close --title <title> --reason …`
+     *   —— 后两者的 `--title` 支持「裸 slug」，而裸 slug 与 `- id:` 精确相等，故直接用 id。
      *
-     * 按**有效状态**给（`study` 才能 confirm/drop；pending/questioning/taskified 走 archive）。
+     * 引擎 2026-10-23 起人工离场出口统一为 `idea close --reason`（旧 drop / archive 已下线）：
+     * study/questioning/pending/covered 全部走 close；`study` 另给 confirm（升 pending）。
      * 在途任务引用期间引擎会拒绝搬走（`source_live_reference`），这是引擎的守卫，不是错误。
+     * 判定用**字面 status**（`converted` 的条目字面仍是 pending）。
      */
     function ideaCommandsFor(entry) {
       const id = typeof entry.id === 'string' && entry.id !== '' ? entry.id : null
@@ -2593,9 +2614,9 @@ window.__ModuleLoader__.load({
       const commands = [{ key: 'append', text: `python .orchd/__main__.py idea append --id ${id} --notes "<追记内容>"` }]
       if (entry.status === 'study') {
         commands.push({ key: 'confirm', text: `python .orchd/__main__.py idea confirm --title ${id}` })
-        commands.push({ key: 'drop', text: `python .orchd/__main__.py idea drop --title ${id}` })
-      } else if (entry.status === 'questioning' || entry.status === 'pending' || entry.status === 'taskified') {
-        commands.push({ key: 'archive', text: `python .orchd/__main__.py idea archive --title ${id} --reason "<裁决理由>"` })
+        commands.push({ key: 'close', text: `python .orchd/__main__.py idea close --title ${id} --reason "<裁决理由>"` })
+      } else if (entry.status === 'questioning' || entry.status === 'pending' || entry.status === 'covered') {
+        commands.push({ key: 'close', text: `python .orchd/__main__.py idea close --title ${id} --reason "<裁决理由>"` })
       }
       return commands
     }
@@ -3237,7 +3258,7 @@ window.__ModuleLoader__.load({
      * 必须有单测兜底。测试用 `test/client.test.mjs` 的 `vm` + 假 `window.__ModuleLoader__`
      * 加载本文件再取这个对象断言。
      */
-    exports.__testables = { applyFilters, sortRows, countByStatus, TASK_STATUS_I18N, ALL_STATUSES, styles, IDEA_STATUSES_UI, IDEA_STATUS_I18N, ideaCommandsFor, computeThumb, scrollTopForThumbTop, SCROLLBAR_WIDTH, SCROLLBAR_MIN_THUMB, ROW_HEIGHT, IDEA_ROW_HEIGHT, interactionCss, INTERACTION_CSS_TAG, layoutDependencyGraph, graphAnomalyRows, graphNodeLabel, truncateLabel, graphTextUnits, GRAPH_NODE_W, GRAPH_NODE_H, GRAPH_GAP_X, GRAPH_GAP_Y }
+    exports.__testables = { applyFilters, sortRows, countByStatus, TASK_STATUS_I18N, ALL_STATUSES, styles, IDEA_STATUSES_UI, IDEA_STATUS_I18N, ideaCommandsFor, ideaDisplayStatus, ideaStatusText, computeThumb, scrollTopForThumbTop, SCROLLBAR_WIDTH, SCROLLBAR_MIN_THUMB, ROW_HEIGHT, IDEA_ROW_HEIGHT, interactionCss, INTERACTION_CSS_TAG, layoutDependencyGraph, graphAnomalyRows, graphNodeLabel, truncateLabel, graphTextUnits, GRAPH_NODE_W, GRAPH_NODE_H, GRAPH_GAP_X, GRAPH_GAP_Y }
     return module.exports
   }
 })
