@@ -771,28 +771,14 @@ window.__ModuleLoader__.load({
     function interactionCss() {
       const hover = 'var(--dsw-alias-interactive-bg-hover, rgba(127, 127, 127, 0.12))'
       const active = 'var(--dsw-alias-interactive-bg-active, rgba(127, 127, 127, 0.2))'
-      // 平台品牌强调色（`--dsw-alias-state-business-primary` = DeepSeek 品牌蓝）。
-      // 兜底写 `rgba()` 而**不是 `#rrggbb`**：本仓库 FR-11.3 禁止前端出现裸色值 hex
-      // （lint 套件会抓，实测第 8 轮就被抓到过一次）。兜底保证变量缺失时脉冲依旧醒目。
-      const accent = 'var(--dsw-alias-state-business-primary, rgba(77, 107, 254, 1))'
+
       return [
         // 悬停：禁用态不亮（否则会让人以为能点）
         `[data-orchd-toggle]:hover,[data-orchd-panel] button:hover:not(:disabled){background-color:${hover}!important}`,
         // 按下：比悬停更深一档
         `[data-orchd-toggle]:active,[data-orchd-panel] button:active:not(:disabled){background-color:${active}!important}`,
         // 键盘可达：焦点环（鼠标点击不显示，避免视觉噪音）
-        '[data-orchd-toggle]:focus-visible,[data-orchd-panel] button:focus-visible{outline:2px solid var(--dsw-alias-label-secondary, currentColor);outline-offset:1px}',
-        // 标题脉冲环：点击图标时面板**本来就开着**（`openTab` 只是聚焦，没有任何可见变化），
-        // 用它提示「面板在这儿」。
-        // ⚠ 强度：第一版借的是 hover 那个 12% 的弱色 ⇒ 用户实测「太弱了」。
-        //   现在用**平台品牌强调色**（`--dsw-alias-state-business-primary`，第一方用它的地方很多），
-        //   并且：① 环从 0 扩散到 14px（辐射式「ping」，比静止细环显眼得多）；
-        //         ② 标题文字同时变亮成强调色 ⇒ 文字本身也在闪，不只是外圈。
-        //   仍用 `box-shadow` + `color`：都**不参与布局**，标题不会被挤动；
-        //   且是一次性动画（非状态样式），播完自动回到无环/原色。
-        `@keyframes orchd-title-flash{0%{box-shadow:0 0 0 0 ${accent}}100%{box-shadow:0 0 0 14px transparent}}`,
-        `@keyframes orchd-title-flash-text{0%,35%{color:${accent}}100%{color:inherit}}`,
-        '[data-orchd-title-flash="true"]{border-radius:999px;animation:orchd-title-flash 1s ease-out 1,orchd-title-flash-text 1s ease-out 1}'
+        '[data-orchd-toggle]:focus-visible,[data-orchd-panel] button:focus-visible{outline:2px solid var(--dsw-alias-label-secondary, currentColor);outline-offset:1px}'
       ].join('')
     }
 
@@ -812,39 +798,8 @@ window.__ModuleLoader__.load({
       }
     }
 
-    /**
-     * 标题脉冲环的订阅点（模块级）。
-     *
-     * `mounted` 由面板组件在挂载/卸载时维护：图标被点时如果面板**本来就开着**，
-     * `openTab` 只会聚焦已有 tab、界面上没有任何变化，用户会以为「点了没反应」——
-     * 这时才在标题上闪一下指路；面板本来是关的，tab 出现本身就是反馈，不必再闪。
-     */
-    const panelState = { mounted: false, listeners: new Set() }
-
-    function flashPanelTitle() {
-      for (const listener of [...panelState.listeners]) {
-        try {
-          listener()
-        } catch (error) {
-          console.error('orchd-tasks: title flash listener failed', error)
-        }
-      }
-    }
-
-    /**
-     * 订阅标题脉冲。返回 `flashId`：每次闪烁 +1，调用方把它当 `key` 用，
-     * 靠**重挂载**让 CSS 动画能重放（同一元素上重复加同一个属性值不会重启动画）。
-     */
-    function useTitleFlash() {
-      const [flashId, setFlashId] = React.useState(0)
-      React.useEffect(() => {
-        const listener = () => setFlashId((value) => value + 1)
-        panelState.listeners.add(listener)
-        return () => panelState.listeners.delete(listener)
-      }, [])
-      return flashId
-    }
-
+    // 标题脉冲环已移除：入口按钮改为「打开 / 关闭」toggle（见 OrchdToggleButton），
+    // 再点有可见反馈（面板收起），不再需要「面板本来开着 ⇒ 点了没反应」的提示。
 
     async function writeClipboard(text) {
       if (navigator.clipboard?.writeText !== undefined) {
@@ -2646,13 +2601,6 @@ window.__ModuleLoader__.load({
       // 每会话记忆（FR-12.2）：视图与筛选状态按 sessionId 隔离保存，切走再切回可恢复
       const sessionMemory = React.useRef(new Map())
 
-      // 面板是否已挂载：图标被点时用来判断「面板本来就开着」（这时才需要在标题上闪一下指路）
-      React.useEffect(() => {
-        panelState.mounted = true
-        return () => {
-          panelState.mounted = false
-        }
-      }, [])
 
       // 会话切换时清掉「当前打开的任务/想法」（视图状态按会话隔离）
       React.useEffect(() => {
@@ -3115,20 +3063,16 @@ window.__ModuleLoader__.load({
     /** tab chip 标题（sidebar.right.pane.tab.title，keyed/session）。 */
     function OrchdTasksTitle(props) {
       const t = typeof props?.t === 'function' ? props.t : (key) => key
-      // 点图标时若面板本来就开着，就在标题上闪一下（见 flashPanelTitle 的注释）。
-      // `flashId` 当 `key` 用：每次闪烁重挂载标题，CSS 动画才能重放。
-      const flashId = useTitleFlash()
       return React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } }, [
         React.createElement(OrchdIcon, { key: 'i', size: 14 }),
-        React.createElement('span', {
-          key: `t-${flashId}`,
-          'data-orchd-title-flash': flashId > 0 ? 'true' : 'false'
-        }, t('title'))
+        React.createElement('span', null, t('title'))
       ])
     }
 
     /**
      * 会话 header 的开关按钮。
+     *
+     * 点击 = 打开 / 关闭（面板正显示时收起右侧栏，否则打开并聚焦本面板）。
      *
      * 席位是 conversation.session.header.utilities，kind 为 list、scope 为 session。
      * 不要用 conversation.session.header.corner：那是 **single** 席位，右侧栏自带的
@@ -3141,13 +3085,11 @@ window.__ModuleLoader__.load({
         type: 'button',
         style: styles.iconButton,
         onClick: () => {
-          // 面板**本来就开着**时 openTab 只是聚焦，界面毫无变化 → 在标题上闪一下指路
-          // （面板本来是关的就不闪：tab 出现本身就是反馈）
-          if (panelState.mounted) flashPanelTitle()
+          // 点击只是「打开 / 关闭」：面板正显示时收起，否则打开并聚焦本面板。
           try {
-            props.open?.()
+            props.toggle?.()
           } catch (error) {
-            console.error('orchd-tasks: openTab failed', error)
+            console.error('orchd-tasks: toggle failed', error)
           }
         },
         'aria-label': t('toggleLabel'),
@@ -3241,7 +3183,17 @@ window.__ModuleLoader__.load({
           order: 30,
           locale: NS,
           inject: () => ({
-            open: () => ctx.sidebarRight.openTab(TAB_KIND)
+            // 点击 = 打开 / 关闭：面板正显示时收起，否则打开并聚焦本面板。
+            // 用平台 sidebarRight 的真实状态（isExpanded / active），不靠本地「挂载与否」猜测。
+            toggle: () => {
+              const sidebar = ctx.sidebarRight
+              const active = typeof sidebar?.active === 'function' ? sidebar.active() : undefined
+              if (typeof sidebar?.isExpanded === 'function' && sidebar.isExpanded() && active?.kind === TAB_KIND) {
+                sidebar.toggleExpanded()
+              } else {
+                sidebar.openTab(TAB_KIND)
+              }
+            }
           })
         }, OrchdToggleButton)),
         'orchd-tasks: header toggle'
