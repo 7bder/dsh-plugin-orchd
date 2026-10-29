@@ -126,7 +126,7 @@ window.__ModuleLoader__.load({
       // 列表与筛选（FR-5）
       search: '搜索 ID / 名称…',
       sortBy: '排序',
-      sortDefault: '活跃优先',
+      sortDefault: '活跃优先 · 按时间',
       sortImportance: '重要度',
       sortDifficulty: '难度',
       sortModule: '模块',
@@ -335,7 +335,7 @@ window.__ModuleLoader__.load({
       summaryFromPlugin: 'Source: plugin',
       search: 'Search id / name…',
       sortBy: 'Sort',
-      sortDefault: 'Active first',
+      sortDefault: 'Active first · by time',
       sortImportance: 'Importance',
       sortDifficulty: 'Difficulty',
       sortModule: 'Module',
@@ -1404,10 +1404,25 @@ window.__ModuleLoader__.load({
       return counts
     }
 
-    /** 默认「活跃优先，其次重要度」（FR-5.4）。 */    function sortRows(rows, by) {
+    /** 默认「活跃优先 → 组内按时间」：活跃按最近动作、终态按合并时间（FR-5.4 修订）。 */    function sortRows(rows, by) {
       const rank = (value) => ({ critical: 4, high: 3, normal: 2, low: 1 })[value] ?? 0
       const diff = (value) => ({ high: 3, medium: 2, low: 1 })[value] ?? 0
       const activeFirst = (status) => (status === 'claimed' || status === 'done' || status === 'in_review' ? 0 : status === 'completed' || status === 'cancelled' ? 2 : 1)
+      // 时间戳来自宿主（`lastActionAt` / `mergedAt`，git 近似；取不到为 null → 排本组最后）
+      const timeOf = (row) => {
+        const raw = row.status === 'completed' || row.status === 'cancelled' ? row.mergedAt : row.lastActionAt
+        if (typeof raw !== 'string' || raw === '') return null
+        const parsed = Date.parse(raw)
+        return Number.isFinite(parsed) ? parsed : null
+      }
+      const byTime = (a, b) => {
+        const ta = timeOf(a)
+        const tb = timeOf(b)
+        if (ta === null && tb === null) return 0
+        if (ta === null) return 1
+        if (tb === null) return -1
+        return tb - ta
+      }
       const copy = [...rows]
       const byId = (a, b) => String(a.id ?? '').localeCompare(String(b.id ?? ''))
       switch (by) {
@@ -1420,7 +1435,7 @@ window.__ModuleLoader__.load({
         case 'status':
           return copy.sort((a, b) => String(a.status ?? '~').localeCompare(String(b.status ?? '~')) || byId(a, b))
         default:
-          return copy.sort((a, b) => activeFirst(a.status) - activeFirst(b.status) || rank(b.importance ?? b.importanceDerived) - rank(a.importance ?? a.importanceDerived) || byId(a, b))
+          return copy.sort((a, b) => activeFirst(a.status) - activeFirst(b.status) || byTime(a, b) || rank(b.importance ?? b.importanceDerived) - rank(a.importance ?? a.importanceDerived) || byId(a, b))
       }
     }
 
