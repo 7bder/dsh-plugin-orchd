@@ -43,426 +43,255 @@ window.__ModuleLoader__.load({
      */
     const SCROLLBAR_MIN_THUMB = 72
 
-    const zh = {
-      panel: 'orchd 任务',
-      title: 'orchd 任务',
-      toggleLabel: 'orchd 任务（在右侧栏打开）',
-      guideHint: '当前会话所属项目的 orchd 任务状态',
-      retry: '重试',
-      back: '返回列表',
-      jumpTo: '跳转到任务 ',
-      copy: '复制命令',
-      copied: '已复制',
-      copyFailed: '复制失败，请手动选择文本',
-      copyText: '复制',
-      copyFailedShort: '复制失败',
-      loading: '正在读取任务数据…',
-      noSession: '没有会话上下文',
-      noSessionHint: '先在左侧选择一个项目会话，再打开这个面板。',
-      project: '项目',
-      snapshotAt: '更新于',
-      redetect: '重新检测',
-      detectedBy: '项目根来源',
-      python: 'Python',
-      layout: '布局',
-      mainWorktree: '主工作树',
-      masterPath: '定义文件',
-      snapshot: '快照',
-      diagnostics: '诊断',
-      showDiagnostics: '展开诊断',
-      hideDiagnostics: '收起诊断',
-      reason: '失败环节',
-      detail: '原始诊断',
-      nextStep: '建议下一步',
-      // 四态卡片
-      stateNotInstalled: '未接入 orchd',
-      stateUninitialized: '已安装，未初始化',
-      stateReady: '就绪',
-      stateBroken: '异常',
-      installTitle: '这个项目还没有接入 orchd',
-      installHint: '复制下面的命令，在项目根目录执行即可完成接入；也可以让 agent 帮你接入。',
-      installAgent: '让 agent 帮我接入',
-      installAgentHint: '把接入指令交给当前会话的 agent，由它按 orchd 官方流程执行（插件自己不做安装）',
-      installAgentUnavailable: 'A 路径不可用（命令服务未就绪），请用上面的命令手动接入',
-      installDegradeReason: '原因：',
-      installConfirmLead: '将要注入这条消息（确认前不会发送）：',
-      installConfirm: '确认注入',
-      installCancel: '收起',
-      installInjecting: '注入中…',
-      installInjected: '已注入：请在上面的会话里查看 agent 的接入过程。',
-      installFailed: '注入失败：',
-      initTitle: '已安装，但还没有任务定义',
-      initHint: '引擎会把这个项目判为初始化阶段。任务定义文件是：',
-      brokenTitle: 'orchd 状态异常',
-      brokenHint: '面板不会把它降级成「未初始化」或空看板，下面是失败环节与原始诊断。',
-      // 状态条（FR-4）
-      sTotal: '总数',
-      sActive: '活跃',
-      sPending: '待办',
-      sClaimed: '已认领',
-      sDone: '待审',
-      sInReview: '审查中',
-      sCompleted: '已完成',
-      sCancelled: '已取消',
-      // 状态条即筛选器（FR-5.2 / 5.9 / 5.10）
-      filterAll: '全部',
-      filterActive: '活跃',
-      filterSummaryHint: '点击筛选；再点一次回到全部',
-      zeroHint: '（0，仍可点击）',
-      emptyFilteredByStatus: '该状态当前没有任务：',
-      emptyFilteredByKeyword: '没有匹配「{kw}」的任务',
-      emptyFilteredByModule: '所选模块下没有任务',
-      clearFiltersShort: '清除',
-      // 筛选弹层（FR-5.4 / 5.5）
-      filterPanel: '筛选',
-      filterModules: '模块（可多选）',
-      filterSort: '排序',
-      filterNoModules: '这个项目只声明了一个模块',
-      filterClearAll: '清除全部',
-      filterBadgeHint: '当前生效的筛选条件数',
-      // 状态条与筛选控件
-      summaryFromEngine: '口径：引擎',
-      summaryFromPlugin: '口径：插件自算',
-      // 列表与筛选（FR-5）
-      search: '搜索 ID / 名称…',
-      sortBy: '排序',
-      sortDefault: '活跃优先 · 按时间',
-      sortImportance: '重要度',
-      sortDifficulty: '难度',
-      sortModule: '模块',
-      sortStatus: '状态',
-      clearFilters: '清除筛选',
-      countShown: '显示',
-      countUnit: '条',
-      noTasksInProject: '这个项目还没有任务定义',
-      noTasksAfterFilter: '没有符合当前筛选的任务',
-      showingAll: '（含终态任务）',
-      tasksScrollLabel: '任务列表滚动条',
-      ideasScrollLabel: '想法列表滚动条',
-      // 详情（FR-6）
-      dAcceptance: '验收标准',
-      dVerify: '验证命令',
-      dVerifyTimeout: '验证超时',
-      dFilesToEdit: '写范围',
-      dExemptFiles: '豁免文件',
-      dDependsOn: '依赖（上游）',
-      dDependents: '被依赖（下游）',
-      dImportance: '重要度（显式）',
-      dImportanceDerived: '重要度（引擎推导）',
-      dDifficulty: '难度',
-      dModule: '模块',
-      dStatus: '状态',
-      dClaimedBy: '认领人',
-      dAttempts: '尝试次数',
-      dSource: '来源',
-      dEstimatedHours: '预估工时',
-      dReviewPhase: '审查阶段',
-      dReviewers: '审查人',
-      dIndependentReview: '要求独立审查',
-      dRequires: '能力标签',
-      dModuleRole: '模块职责',
-      dBrief: '简介',
-      dNoData: '暂无',
-      dDefinitionOnly: '这条任务只出现在定义层（状态层没有对应行）——可能尚未被引擎认领或已归档。',
-      dStateOnly: '这条任务只出现在状态层（定义层没有对应行）——可能是归档后的残留事件。',
-      dDownstreamCount: '下游阻塞',
-      dReviewLoad: '拉取审查意见',
-      dReviewLoading: '加载中…',
-      dScrollLabel: '任务详情滚动条',
-      ideasDetailScrollLabel: '想法详情滚动条',
-      // ── 审查事件时间线（FR-8，P2 收窄）──
-      reviewTitle: '审查时间线',
-      reviewType: '审查类型',
-      reviewVerdict: '结论',
-      reviewAt: '时间',
-      reviewBy: '审查人',
-      reviewApproved: '通过',
-      reviewChanges: '打回',
-      reviewEmpty: '这个任务还没有审查记录',
-      reviewUnavailable: '该任务的审查时间线读取失败（列表不受影响）',
-      reviewCurrent: '当前状态摘要',
-      reviewUnsupported: '引擎的只读回看命令只提供「审查提交」事件。以下事件类型引擎未提供，本面板不伪造：',
-      reviewUnsupportedTypes: '认领 · 完成 · 审查认领 · 强制状态变更 · 撤回 · 修订',
-      reviewNoTime: '—',
-      mergeWarning: '合并告警',
-      reviveMarker: '复活标记',
-      // ── 降级语义（FR-9.3 / 9.5）──
-      staleBanner: '引擎当前不可用，下面显示的是最后一次成功的快照（数据可能已过期）。',
-      timeoutHint: '引擎调用超时',
-      exportDiag: '复制诊断快照',
-      exportDiagHint: '把检测结论、各阶段耗时与原始错误复制到剪贴板（只复制，不写文件）',
-      // 空态语义（FR-9.4）
-      localError: '详情加载失败（列表不受影响）',
-      // ── FR-13 想法看板 ──
-      viewTasks: '任务',
-      viewGraph: '依赖图',
-      viewIdeas: '想法',
-      ideasTitle: '想法',
-      ideasArchived: '归档',
-      ideasArchivedUnit: '条',
-      ideasArchivedHint: '归档只计数，不加载全文；已立任务 / 已覆盖 / 人工 close 的条目都到这里了',
-      ideasArchivedHistorical: '归档保留原文，因此这里的 status 是历史值（可能仍写着 pending）',
-      ideasEngineUnsupported: '本项目的 orchd 引擎没有 ideas 子命令（旧版本）：下面这份列表与状态是直接读 IDEAS.md 得到的，没有引擎清单可交叉核对。升级引擎后会自动启用交叉核对。',
-      ideasBadgeHint: '在等你裁决的想法数（论证中 + 待补充）',
-      ideasEmpty: '这个项目的 IDEAS 里还没有条目',
-      ideasEmptyFiltered: '该状态当前没有想法：',
-      ideasEmptyKeyword: '没有匹配「{kw}」的想法',
-      ideasDegraded: '正文结构异常，仅显示标题',
-      ideasOnlyInMarkdown: '仅存在于 IDEAS.md（引擎清单里没有）',
-      ideasOwnerUser: '等你裁决',
-      ideasOwnerAgent: '等 agent 拆解',
-      ideasOwnerNone: '无需等待',
-      ideasConverted: '已转成的任务',
-      ideasConvertedHint: '定义层里 source 指向这条想法的任务',
-      ideasConvertedTasks: '个任务',
-      ideasStatusUnknown: '未知状态',
-      ideasArchiveLegacyDropped: '历史已放弃（dropped）',
-      ideasUntasked: '未立任务',
-      ideasNoId: '无法对照',
-      ideasDetail: '正文',
-      ideasNotes: '追加记录',
-      ideasExtra: '未知字段',
-      ideasDetailPath: '详档',
-      ideasCommands: '你可以执行的命令（id 已填好）',
-      ideasCommandsHint: '本面板只读：不提供 propose / confirm / close 按钮，只帮你复制命令。这些命令按当前状态给出；在途任务引用期间引擎会拒绝搬走（source_live_reference）。',
-      ideasCommandLegend: 'append = 往这条想法追加一条带时间戳的追记（不动原正文、不改状态，就是「追加记录」里那几行）；confirm / close = 你对这条想法的裁决（仅用户可执行；close 一律归档并留下裁决理由）。括号里的 <…> 是占位符，换成你自己要写的字。',
-      ideasPropose: '新建想法（引擎侧的正式通道）',
-      ideasProposeHint: '新建时还没有 id，所以标题里要自己声明一个（形如「标题（id: my-idea）」）。',
-      iStudy: '论证中',
-      iQuestioning: '待补充',
-      iPending: '待拆解',
-      iConverted: '已转任务',
-      iCovered: '已覆盖',
-      // ── FR-7 依赖图（P2b）──
-      graphCounts: '节点 {n} · 边 {e}',
-      graphIncludeTerminal: '含终态任务',
-      graphIncludeTerminalHint: '把已完成 / 已取消的任务也画进来（默认只画活跃任务与它们的直接邻居）',
-      graphBackToAll: '返回全图',
-      graphEmptyActive: '当前没有活跃任务',
-      graphEmptyActiveHint: '把「含终态任务」打开可以看完整依赖图（本图隐藏了 {n} 个终态任务）。',
-      graphHiddenTerminal: '已隐藏 {n} 个终态任务',
-      graphTruncated: '节点太多，只画了前 {n} 个',
-      graphAnomalyTitle: '依赖关系异常（引擎不阻止，这里如实标注）',
-      graphCycle: '循环依赖：',
-      graphDangling: '依赖了不存在的任务：',
-      graphSelf: '任务依赖了自己：',
-      graphMissing: '（不存在）',
-      graphUnlayered: '环上或被环阻塞，无法分层',
-      graphBlocked: '阻塞下游',
-      graphFocus: '聚焦',
-      graphFocusUpstream: '上游',
-      graphFocusDownstream: '下游',
-      graphOpenTask: '打开详情',
-      graphHint: '点一个节点看它的上下游闭包；点「返回全图」回到活跃子图',
-      graphScrollLabel: '依赖图滚动条',
-      graphUnavailable: '依赖图数据不可用',
-      graphLayerLabel: '分层',
+        /**
+     * i18n 单表：键 → [中文, 英文]。键名只写一遍，`zh` / `en` 由本表派生后交给 ctx.locale.register；
+     * 分组注释沿用中文侧（英文侧同一分组，不再重复注释）。
+     */
+    const I18N = {
+      panel: ['orchd 任务', 'Orchd Tasks'],
+      title: ['orchd 任务', 'Orchd Tasks'],
+      toggleLabel: ['orchd 任务（在右侧栏打开）', 'Orchd Tasks (opens in the right sidebar)'],
+      guideHint: ['当前会话所属项目的 orchd 任务状态', 'orchd task state of the project this session belongs to'],
+      retry: ['重试', 'Retry'],
+      back: ['返回列表', 'Back to list'],
+      jumpTo: ['跳转到任务 ', 'Jump to task '],
+      copy: ['复制命令', 'Copy commands'],
+      copied: ['已复制', 'Copied'],
+      copyFailed: ['复制失败，请手动选择文本', 'Copy failed — select the text manually'],
+      copyText: ['复制', 'Copy'],
+      copyFailedShort: ['复制失败', 'Copy failed'],
+      loading: ['正在读取任务数据…', 'Loading task data…'],
+      noSession: ['没有会话上下文', 'No session context'],
+      noSessionHint: ['先在左侧选择一个项目会话，再打开这个面板。', 'Select a project session on the left, then open this panel.'],
+      project: ['项目', 'Project'],
+      snapshotAt: ['更新于', 'Updated at'],
+      redetect: ['重新检测', 'Re-detect'],
+      detectedBy: ['项目根来源', 'Root source'],
+      python: ['Python', 'Python'],
+      layout: ['布局', 'Layout'],
+      mainWorktree: ['主工作树', 'Main worktree'],
+      masterPath: ['定义文件', 'Definition file'],
+      snapshot: ['快照', 'Snapshot'],
+      diagnostics: ['诊断', 'Diagnostics'],
+      showDiagnostics: ['展开诊断', 'Show diagnostics'],
+      hideDiagnostics: ['收起诊断', 'Hide diagnostics'],
+      reason: ['失败环节', 'Failed stage'],
+      detail: ['原始诊断', 'Raw diagnostics'],
+      nextStep: ['建议下一步', 'Suggested next step'],
+      //// 四态卡片
+      stateNotInstalled: ['未接入 orchd', 'Not installed'],
+      stateUninitialized: ['已安装，未初始化', 'Installed, uninitialized'],
+      stateReady: ['就绪', 'Ready'],
+      stateBroken: ['异常', 'Broken'],
+      installTitle: ['这个项目还没有接入 orchd', 'This project has not been set up with orchd yet'],
+      installHint: ['复制下面的命令，在项目根目录执行即可完成接入；也可以让 agent 帮你接入。', 'Copy the commands below and run them in the project root, or ask an agent to do it.'],
+      installAgent: ['让 agent 帮我接入', 'Ask an agent to set it up'],
+      installAgentHint: ['把接入指令交给当前会话的 agent，由它按 orchd 官方流程执行（插件自己不做安装）', 'Hand the setup instruction to this session\'s agent; it runs orchd\'s official flow (the plugin never installs anything)'],
+      installAgentUnavailable: ['A 路径不可用（命令服务未就绪），请用上面的命令手动接入', 'The A path is unavailable (command service not ready) — use the commands above'],
+      installDegradeReason: ['原因：', 'Reason: '],
+      installConfirmLead: ['将要注入这条消息（确认前不会发送）：', 'This message will be injected (nothing is sent before you confirm):'],
+      installConfirm: ['确认注入', 'Confirm injection'],
+      installCancel: ['收起', 'Collapse'],
+      installInjecting: ['注入中…', 'Injecting…'],
+      installInjected: ['已注入：请在上面的会话里查看 agent 的接入过程。', 'Injected — watch the agent carry out the setup in the conversation.'],
+      installFailed: ['注入失败：', 'Injection failed: '],
+      initTitle: ['已安装，但还没有任务定义', 'Installed, but no task definitions yet'],
+      initHint: ['引擎会把这个项目判为初始化阶段。任务定义文件是：', 'The engine treats this project as first-time initialization. Definition file:'],
+      brokenTitle: ['orchd 状态异常', 'orchd state is broken'],
+      brokenHint: ['面板不会把它降级成「未初始化」或空看板，下面是失败环节与原始诊断。', 'The panel never downgrades this to "uninitialized" or an empty board. Failed stage and raw diagnostics:'],
+      //// 状态条（FR-4）
+      sTotal: ['总数', 'Total'],
+      sPending: ['待办', 'Pending'],
+      sClaimed: ['已认领', 'Claimed'],
+      sDone: ['待审', 'Done'],
+      sInReview: ['审查中', 'In review'],
+      sCompleted: ['已完成', 'Completed'],
+      sCancelled: ['已取消', 'Cancelled'],
+      //// 状态条即筛选器（FR-5.2 / 5.9 / 5.10）
+      filterAll: ['全部', 'All'],
+      filterActive: ['活跃', 'Active'],
+      filterSummaryHint: ['点击筛选；再点一次回到全部', 'Click to filter; click again for all'],
+      zeroHint: ['（0，仍可点击）', '(0, still clickable)'],
+      emptyFilteredByStatus: ['该状态当前没有任务：', 'No tasks with this status: '],
+      emptyFilteredByKeyword: ['没有匹配「{kw}」的任务', 'No tasks match "{kw}"'],
+      emptyFilteredByModule: ['所选模块下没有任务', 'No tasks in the selected modules'],
+      clearFiltersShort: ['清除', 'Clear'],
+      //// 筛选弹层（FR-5.4 / 5.5）
+      filterPanel: ['筛选', 'Filter'],
+      filterModules: ['模块（可多选）', 'Modules (multi-select)'],
+      filterSort: ['排序', 'Sort'],
+      filterNoModules: ['这个项目只声明了一个模块', 'This project declares a single module'],
+      filterClearAll: ['清除全部', 'Clear all'],
+      filterBadgeHint: ['当前生效的筛选条件数', 'Active filter conditions'],
+      //// 状态条与筛选控件
+      summaryFromEngine: ['口径：引擎', 'Source: engine'],
+      summaryFromPlugin: ['口径：插件自算', 'Source: plugin'],
+      //// 列表与筛选（FR-5）
+      search: ['搜索 ID / 名称…', 'Search id / name…'],
+      sortBy: ['排序', 'Sort'],
+      sortDefault: ['活跃优先 · 按时间', 'Active first · by time'],
+      sortImportance: ['重要度', 'Importance'],
+      sortDifficulty: ['难度', 'Difficulty'],
+      sortModule: ['模块', 'Module'],
+      sortStatus: ['状态', 'Status'],
+      clearFilters: ['清除筛选', 'Clear filters'],
+      countShown: ['显示', 'Showing'],
+      countUnit: ['条', ''],
+      noTasksInProject: ['这个项目还没有任务定义', 'This project has no task definitions'],
+      noTasksAfterFilter: ['没有符合当前筛选的任务', 'No tasks match the current filters'],
+      showingAll: ['（含终态任务）', '(terminal tasks included)'],
+      tasksScrollLabel: ['任务列表滚动条', 'Task list scrollbar'],
+      ideasScrollLabel: ['想法列表滚动条', 'Ideas list scrollbar'],
+      //// 详情（FR-6）
+      dAcceptance: ['验收标准', 'Acceptance criteria'],
+      dVerify: ['验证命令', 'Verify command'],
+      dVerifyTimeout: ['验证超时', 'Verify timeout'],
+      dFilesToEdit: ['写范围', 'Files to edit'],
+      dExemptFiles: ['豁免文件', 'Exempt files'],
+      dDependsOn: ['依赖（上游）', 'Depends on'],
+      dDependents: ['被依赖（下游）', 'Depended on by'],
+      dImportance: ['重要度（显式）', 'Importance (explicit)'],
+      dImportanceDerived: ['重要度（引擎推导）', 'Importance (engine-derived)'],
+      dDifficulty: ['难度', 'Difficulty'],
+      dModule: ['模块', 'Module'],
+      dClaimedBy: ['认领人', 'Claimed by'],
+      dAttempts: ['尝试次数', 'Attempts'],
+      dSource: ['来源', 'Source'],
+      dEstimatedHours: ['预估工时', 'Estimated hours'],
+      dReviewPhase: ['审查阶段', 'Review phase'],
+      dReviewers: ['审查人', 'Reviewers'],
+      dIndependentReview: ['要求独立审查', 'Independent review required'],
+      dRequires: ['能力标签', 'Requires'],
+      dModuleRole: ['模块职责', 'Module role'],
+      dBrief: ['简介', 'Brief'],
+      dNoData: ['暂无', 'none'],
+      dDefinitionOnly: ['这条任务只出现在定义层（状态层没有对应行）——可能尚未被引擎认领或已归档。', 'This task exists only in the definition layer.'],
+      dStateOnly: ['这条任务只出现在状态层（定义层没有对应行）——可能是归档后的残留事件。', 'This task exists only in the state layer.'],
+      dDownstreamCount: ['下游阻塞', 'Blocks downstream'],
+      dReviewLoad: ['拉取审查意见', 'Load review history'],
+      dReviewLoading: ['加载中…', 'Loading…'],
+      dScrollLabel: ['任务详情滚动条', 'Task detail scrollbar'],
+      ideasDetailScrollLabel: ['想法详情滚动条', 'Idea detail scrollbar'],
+      //// ── 审查事件时间线（FR-8，P2 收窄）──
+      reviewTitle: ['审查时间线', 'Review timeline'],
+      reviewType: ['审查类型', 'Review type'],
+      reviewApproved: ['通过', 'Approved'],
+      reviewChanges: ['打回', 'Changes requested'],
+      reviewEmpty: ['这个任务还没有审查记录', 'This task has no review records yet'],
+      reviewUnavailable: ['该任务的审查时间线读取失败（列表不受影响）', 'Failed to load this task\'s review timeline (the list is unaffected)'],
+      reviewUnsupported: ['引擎的只读回看命令只提供「审查提交」事件。以下事件类型引擎未提供，本面板不伪造：', 'The engine\'s read-only readback only exposes "review submitted" events. These event types are not provided by the engine and are never fabricated here:'],
+      reviewUnsupportedTypes: ['认领 · 完成 · 审查认领 · 强制状态变更 · 撤回 · 修订', 'claimed · done · review claimed · forced status · retracted · amended'],
+      reviewNoTime: ['—', '—'],
+      mergeWarning: ['合并告警', 'Merge warning'],
+      reviveMarker: ['复活标记', 'Revive marker'],
+      //// ── 降级语义（FR-9.3 / 9.5）──
+      staleBanner: ['引擎当前不可用，下面显示的是最后一次成功的快照（数据可能已过期）。', 'The engine is currently unavailable — showing the last successful snapshot (data may be stale).'],
+      timeoutHint: ['引擎调用超时', 'Engine call timed out'],
+      exportDiag: ['复制诊断快照', 'Copy diagnostics snapshot'],
+      exportDiagHint: ['把检测结论、各阶段耗时与原始错误复制到剪贴板（只复制，不写文件）', 'Copy detection conclusion, stage timings and raw errors to the clipboard (copy only, never writes files)'],
+      //// 空态语义（FR-9.4）
+      localError: ['详情加载失败（列表不受影响）', 'Task detail failed to load (the list is unaffected)'],
+      //// ── FR-13 想法看板 ──
+      viewTasks: ['任务', 'Tasks'],
+      viewGraph: ['依赖图', 'Graph'],
+      viewIdeas: ['想法', 'Ideas'],
+      ideasArchived: ['归档', 'Archived'],
+      ideasArchivedUnit: ['条', ''],
+      ideasArchivedHint: ['归档只计数，不加载全文；已立任务 / 已覆盖 / 人工 close 的条目都到这里了', 'Archived entries are counted only; entries that became tasks, were covered, or were closed live here'],
+      ideasArchivedHistorical: ['归档保留原文，因此这里的 status 是历史值（可能仍写着 pending）', 'The archive keeps the original text, so these statuses are historical'],
+      ideasEngineUnsupported: ['本项目的 orchd 引擎没有 ideas 子命令（旧版本）：下面这份列表与状态是直接读 IDEAS.md 得到的，没有引擎清单可交叉核对。升级引擎后会自动启用交叉核对。', "This project's orchd engine has no ideas subcommand (older build): the list and statuses below are read straight from IDEAS.md, with no engine ledger to cross-check. Cross-checking turns on automatically after an engine upgrade."],
+      ideasBadgeHint: ['在等你裁决的想法数（论证中 + 待补充）', 'Ideas waiting on you (studying + needs info)'],
+      ideasEmpty: ['这个项目的 IDEAS 里还没有条目', 'This project has no IDEAS entries yet'],
+      ideasEmptyFiltered: ['该状态当前没有想法：', 'No ideas with this status: '],
+      ideasEmptyKeyword: ['没有匹配「{kw}」的想法', 'No ideas match "{kw}"'],
+      ideasDegraded: ['正文结构异常，仅显示标题', 'Malformed body — showing title only'],
+      ideasOnlyInMarkdown: ['仅存在于 IDEAS.md（引擎清单里没有）', 'Only present in IDEAS.md (missing from the engine list)'],
+      ideasOwnerUser: ['等你裁决', 'waiting on you'],
+      ideasOwnerAgent: ['等 agent 拆解', 'waiting on an agent'],
+      ideasOwnerNone: ['无需等待', 'no action pending'],
+      ideasConverted: ['已转成的任务', 'Tasks created from this idea'],
+      ideasConvertedHint: ['定义层里 source 指向这条想法的任务', 'Definition-layer tasks whose source points at this idea'],
+      ideasConvertedTasks: ['个任务', 'tasks'],
+      ideasStatusUnknown: ['未知状态', 'unknown status'],
+      ideasArchiveLegacyDropped: ['历史已放弃（dropped）', 'historically dropped'],
+      ideasUntasked: ['未立任务', 'never tasked'],
+      ideasNoId: ['无法对照', 'no id'],
+      ideasNotes: ['追加记录', 'Appended notes'],
+      ideasExtra: ['未知字段', 'Unrecognised fields'],
+      ideasDetailPath: ['详档', 'Detail doc'],
+      ideasCommands: ['你可以执行的命令（id 已填好）', 'Commands you can run (id already filled in)'],
+      ideasCommandsHint: ['本面板只读：不提供 propose / confirm / close 按钮，只帮你复制命令。这些命令按当前状态给出；在途任务引用期间引擎会拒绝搬走（source_live_reference）。', 'This panel is read-only: no propose / confirm / close buttons — it only copies commands. They match the current status; while in-flight tasks reference the entry the engine refuses to move it (source_live_reference).'],
+      ideasCommandLegend: ['append = 往这条想法追加一条带时间戳的追记（不动原正文、不改状态，就是「追加记录」里那几行）；confirm / close = 你对这条想法的裁决（仅用户可执行；close 一律归档并留下裁决理由）。括号里的 <…> 是占位符，换成你自己要写的字。', 'append = add one timestamped note to this idea (it never touches the original body or status — these are the lines shown under "Appended notes"); confirm / close = your decision on this idea (user-only; close always archives the entry with your reason). The <…> parts are placeholders — replace them with your own text.'],
+      ideasPropose: ['新建想法（引擎侧的正式通道）', 'New idea (the engine-side channel)'],
+      ideasProposeHint: ['新建时还没有 id，所以标题里要自己声明一个（形如「标题（id: my-idea）」）。', 'A new idea has no id yet, so declare one in the title (e.g. "Title (id: my-idea)").'],
+      iStudy: ['论证中', 'Studying'],
+      iQuestioning: ['待补充', 'Needs info'],
+      iPending: ['待拆解', 'Awaiting breakdown'],
+      iConverted: ['已转任务', 'Turned into tasks'],
+      iCovered: ['已覆盖', 'Covered'],
+      //// ── FR-7 依赖图（P2b）──
+      graphCounts: ['节点 {n} · 边 {e}', '{n} nodes · {e} edges'],
+      graphIncludeTerminal: ['含终态任务', 'Include finished tasks'],
+      graphIncludeTerminalHint: ['把已完成 / 已取消的任务也画进来（默认只画活跃任务与它们的直接邻居）', 'Also draw completed / cancelled tasks (by default only active tasks and their direct neighbours are drawn)'],
+      graphBackToAll: ['返回全图', 'Back to full graph'],
+      graphEmptyActive: ['当前没有活跃任务', 'No active tasks right now'],
+      graphEmptyActiveHint: ['把「含终态任务」打开可以看完整依赖图（本图隐藏了 {n} 个终态任务）。', 'Turn on "Include finished tasks" to see the whole dependency graph ({n} finished tasks hidden here).'],
+      graphHiddenTerminal: ['已隐藏 {n} 个终态任务', '{n} finished tasks hidden'],
+      graphTruncated: ['节点太多，只画了前 {n} 个', 'Too many nodes — only the first {n} are drawn'],
+      graphAnomalyTitle: ['依赖关系异常（引擎不阻止，这里如实标注）', 'Dependency anomalies (the engine does not block these; they are labelled here)'],
+      graphCycle: ['循环依赖：', 'Dependency cycle: '],
+      graphDangling: ['依赖了不存在的任务：', 'Depends on a missing task: '],
+      graphSelf: ['任务依赖了自己：', 'Task depends on itself: '],
+      graphMissing: ['（不存在）', '(missing)'],
+      graphUnlayered: ['环上或被环阻塞，无法分层', 'On a cycle or blocked by one — cannot be layered'],
+      graphAnomalyMore: ['…另有 {n} 个', '…+{n} more'],
+      graphBlocked: ['阻塞下游', 'blocks'],
+      graphFocus: ['聚焦', 'Focus'],
+      graphFocusUpstream: ['上游', 'upstream'],
+      graphFocusDownstream: ['下游', 'downstream'],
+      graphOpenTask: ['打开详情', 'Open detail'],
+      graphHint: ['点一个节点看它的上下游闭包；点「返回全图」回到活跃子图', 'Click a node to see its upstream/downstream closure; "Back to full graph" returns to the active subgraph'],
+      graphScrollLabel: ['依赖图滚动条', 'Dependency graph scrollbar'],
+      graphUnavailable: ['依赖图数据不可用', 'Dependency graph data unavailable'],
+      graphLensLabel: ['图谱镜头', 'Graph lens'],
+      graphLensChain: ['依赖链', 'Dependency chain'],
+      graphLensUmbrella: ['伞包', 'Umbrellas'],
+      graphLensWave: ['逻辑波次', 'Logical waves'],
+      graphClassic: ['经典视图', 'Classic view'],
+      graphWaveLabel: ['第 {n} 波', 'Wave {n}'],
+      graphWaveUnlayered: ['未分层', 'Ungrouped'],
+      graphWaveTruncated: ['共 {n} 波，显示前 {m} 波', '{n} waves total; showing first {m}'],
+      graphUmbrellaCount: ['{n} 个任务', '{n} tasks'],
+      graphUmbrellaMissingTitle: ['标题缺失（显示 slug）', 'Title missing (showing slug)'],
+      graphUmbrellaMissingTitleCount: ['标题缺失 {n} 个', '{n} missing umbrella titles'],
+      graphUmbrellaUnattributed: ['{n} 个任务没有来源伞，未参与投影', '{n} tasks have no source umbrella (not projected)'],
+      graphUmbrellaCollapse: ['收起', 'Collapse'],
+      graphUmbrellaExpanded: ['已展开 {n}', 'Expanded {n}'],
+      graphLegendDependsOn: ['depends_on（逐条事实）', 'depends_on (per-item fact)'],
+      graphLegendAggregated: ['depends_on_aggregated（伞间聚合）', 'depends_on_aggregated (umbrella aggregate)'],
+      graphLegendSourcedFrom: ['sourced_from（伞 → 成员任务）', 'sourced_from (umbrella → members)'],
+      graphLegendEdge: ['其它边', 'Other edges'],
+      graphLegendProjectedNote: ['投影边，非逐条 depends_on 事实', 'Projected edge, not a per-item depends_on fact'],
+      graphZoomGroup: ['缩放', 'Zoom'],
+      graphZoomIn: ['放大', 'Zoom in'],
+      graphZoomOut: ['缩小', 'Zoom out'],
+      graphZoomFit: ['适配', 'Fit'],
+      graphZoomReset: ['100%', '100%'],
+      graphLensImportance: ['重要性', 'Importance'],
+      graphLensFiles: ['文件冲突', 'File conflicts'],
+      graphImportanceExplicit: ['显式', 'explicit'],
+      graphImportanceDerived: ['推导', 'derived'],
+      graphLegendImportance: ['显式重要度优先于推导', 'Explicit importance wins over derived'],
+      graphLegendTouches: ['同文件编辑关系（投影边，非 depends_on）', 'Same-file edits (projected, not depends_on)'],
+      graphFileTruncated: ['共 {n} 文件，显示前 {m}（{k} 任务）', '{n} files; showing {m} ({k} tasks)'],
+      graphCriticalPath: ['关键路径 {tasks} 个任务 · 跨 {levels} 层', 'Critical path: {tasks} tasks · {levels} levels'],
+      graphCriticalPathHours: ['预计 {hours} 小时', 'est. {hours} h'],
+      graphCriticalPathMissing: ['{missing} 个任务无估时', '{missing} tasks without estimate'],
     }
-    const en = {
-      panel: 'Orchd Tasks',
-      title: 'Orchd Tasks',
-      toggleLabel: 'Orchd Tasks (opens in the right sidebar)',
-      guideHint: 'orchd task state of the project this session belongs to',
-      retry: 'Retry',
-      back: 'Back to list',
-      jumpTo: 'Jump to task ',
-      copy: 'Copy commands',
-      copied: 'Copied',
-      copyFailed: 'Copy failed — select the text manually',
-      copyText: 'Copy',
-      copyFailedShort: 'Copy failed',
-      loading: 'Loading task data…',
-      noSession: 'No session context',
-      noSessionHint: 'Select a project session on the left, then open this panel.',
-      project: 'Project',
-      snapshotAt: 'Updated at',
-      redetect: 'Re-detect',
-      detectedBy: 'Root source',
-      python: 'Python',
-      layout: 'Layout',
-      mainWorktree: 'Main worktree',
-      masterPath: 'Definition file',
-      snapshot: 'Snapshot',
-      diagnostics: 'Diagnostics',
-      showDiagnostics: 'Show diagnostics',
-      hideDiagnostics: 'Hide diagnostics',
-      reason: 'Failed stage',
-      detail: 'Raw diagnostics',
-      nextStep: 'Suggested next step',
-      stateNotInstalled: 'Not installed',
-      stateUninitialized: 'Installed, uninitialized',
-      stateReady: 'Ready',
-      stateBroken: 'Broken',
-      installTitle: 'This project has not been set up with orchd yet',
-      installHint: 'Copy the commands below and run them in the project root, or ask an agent to do it.',
-      installAgent: 'Ask an agent to set it up',
-      installAgentHint: 'Hand the setup instruction to this session\'s agent; it runs orchd\'s official flow (the plugin never installs anything)',
-      installAgentUnavailable: 'The A path is unavailable (command service not ready) — use the commands above',
-      installDegradeReason: 'Reason: ',
-      installConfirmLead: 'This message will be injected (nothing is sent before you confirm):',
-      installConfirm: 'Confirm injection',
-      installCancel: 'Collapse',
-      installInjecting: 'Injecting…',
-      installInjected: 'Injected — watch the agent carry out the setup in the conversation.',
-      installFailed: 'Injection failed: ',
-      initTitle: 'Installed, but no task definitions yet',
-      initHint: 'The engine treats this project as first-time initialization. Definition file:',
-      brokenTitle: 'orchd state is broken',
-      brokenHint: 'The panel never downgrades this to "uninitialized" or an empty board. Failed stage and raw diagnostics:',
-      sTotal: 'Total',
-      sActive: 'Active',
-      sPending: 'Pending',
-      sClaimed: 'Claimed',
-      sDone: 'Done',
-      sInReview: 'In review',
-      sCompleted: 'Completed',
-      sCancelled: 'Cancelled',
-      filterAll: 'All',
-      filterActive: 'Active',
-      filterSummaryHint: 'Click to filter; click again for all',
-      zeroHint: '(0, still clickable)',
-      emptyFilteredByStatus: 'No tasks with this status: ',
-      emptyFilteredByKeyword: 'No tasks match "{kw}"',
-      emptyFilteredByModule: 'No tasks in the selected modules',
-      clearFiltersShort: 'Clear',
-      filterPanel: 'Filter',
-      filterModules: 'Modules (multi-select)',
-      filterSort: 'Sort',
-      filterNoModules: 'This project declares a single module',
-      filterClearAll: 'Clear all',
-      filterBadgeHint: 'Active filter conditions',
-      summaryFromEngine: 'Source: engine',
-      summaryFromPlugin: 'Source: plugin',
-      search: 'Search id / name…',
-      sortBy: 'Sort',
-      sortDefault: 'Active first · by time',
-      sortImportance: 'Importance',
-      sortDifficulty: 'Difficulty',
-      sortModule: 'Module',
-      sortStatus: 'Status',
-      clearFilters: 'Clear filters',
-      countShown: 'Showing',
-      countUnit: '',
-      noTasksInProject: 'This project has no task definitions',
-      noTasksAfterFilter: 'No tasks match the current filters',
-      showingAll: '(terminal tasks included)',
-      tasksScrollLabel: 'Task list scrollbar',
-      ideasScrollLabel: 'Ideas list scrollbar',
-      dAcceptance: 'Acceptance criteria',
-      dVerify: 'Verify command',
-      dVerifyTimeout: 'Verify timeout',
-      dFilesToEdit: 'Files to edit',
-      dExemptFiles: 'Exempt files',
-      dDependsOn: 'Depends on',
-      dDependents: 'Depended on by',
-      dImportance: 'Importance (explicit)',
-      dImportanceDerived: 'Importance (engine-derived)',
-      dDifficulty: 'Difficulty',
-      dModule: 'Module',
-      dStatus: 'Status',
-      dClaimedBy: 'Claimed by',
-      dAttempts: 'Attempts',
-      dSource: 'Source',
-      dEstimatedHours: 'Estimated hours',
-      dReviewPhase: 'Review phase',
-      dReviewers: 'Reviewers',
-      dIndependentReview: 'Independent review required',
-      dRequires: 'Requires',
-      dModuleRole: 'Module role',
-      dBrief: 'Brief',
-      dNoData: 'none',
-      dDefinitionOnly: 'This task exists only in the definition layer.',
-      dStateOnly: 'This task exists only in the state layer.',
-      dDownstreamCount: 'Blocks downstream',
-      dReviewLoad: 'Load review history',
-      dReviewLoading: 'Loading…',
-      dScrollLabel: 'Task detail scrollbar',
-      ideasDetailScrollLabel: 'Idea detail scrollbar',
-      reviewTitle: 'Review timeline',
-      reviewType: 'Review type',
-      reviewVerdict: 'Verdict',
-      reviewAt: 'Time',
-      reviewBy: 'Reviewer',
-      reviewApproved: 'Approved',
-      reviewChanges: 'Changes requested',
-      reviewEmpty: 'This task has no review records yet',
-      reviewUnavailable: 'Failed to load this task\'s review timeline (the list is unaffected)',
-      reviewCurrent: 'Current state',
-      reviewUnsupported: 'The engine\'s read-only readback only exposes "review submitted" events. These event types are not provided by the engine and are never fabricated here:',
-      reviewUnsupportedTypes: 'claimed · done · review claimed · forced status · retracted · amended',
-      reviewNoTime: '—',
-      mergeWarning: 'Merge warning',
-      reviveMarker: 'Revive marker',
-      staleBanner: 'The engine is currently unavailable — showing the last successful snapshot (data may be stale).',
-      timeoutHint: 'Engine call timed out',
-      exportDiag: 'Copy diagnostics snapshot',
-      exportDiagHint: 'Copy detection conclusion, stage timings and raw errors to the clipboard (copy only, never writes files)',
-      localError: 'Task detail failed to load (the list is unaffected)',
-      viewTasks: 'Tasks',
-      viewGraph: 'Graph',
-      viewIdeas: 'Ideas',
-      ideasTitle: 'Ideas',
-      ideasArchived: 'Archived',
-      ideasArchivedUnit: '',
-      ideasArchivedHint: 'Archived entries are counted only; entries that became tasks, were covered, or were closed live here',
-      ideasArchivedHistorical: 'The archive keeps the original text, so these statuses are historical',
-      ideasEngineUnsupported: "This project's orchd engine has no ideas subcommand (older build): the list and statuses below are read straight from IDEAS.md, with no engine ledger to cross-check. Cross-checking turns on automatically after an engine upgrade.",
-      ideasBadgeHint: 'Ideas waiting on you (studying + needs info)',
-      ideasEmpty: 'This project has no IDEAS entries yet',
-      ideasEmptyFiltered: 'No ideas with this status: ',
-      ideasEmptyKeyword: 'No ideas match "{kw}"',
-      ideasDegraded: 'Malformed body — showing title only',
-      ideasOnlyInMarkdown: 'Only present in IDEAS.md (missing from the engine list)',
-      ideasOwnerUser: 'waiting on you',
-      ideasOwnerAgent: 'waiting on an agent',
-      ideasOwnerNone: 'no action pending',
-      ideasConverted: 'Tasks created from this idea',
-      ideasConvertedHint: 'Definition-layer tasks whose source points at this idea',
-      ideasConvertedTasks: 'tasks',
-      ideasStatusUnknown: 'unknown status',
-      ideasArchiveLegacyDropped: 'historically dropped',
-      ideasUntasked: 'never tasked',
-      ideasNoId: 'no id',
-      ideasDetail: 'Body',
-      ideasNotes: 'Appended notes',
-      ideasExtra: 'Unrecognised fields',
-      ideasDetailPath: 'Detail doc',
-      ideasCommands: 'Commands you can run (id already filled in)',
-      ideasCommandsHint: 'This panel is read-only: no propose / confirm / close buttons — it only copies commands. They match the current status; while in-flight tasks reference the entry the engine refuses to move it (source_live_reference).',
-      ideasCommandLegend: 'append = add one timestamped note to this idea (it never touches the original body or status — these are the lines shown under "Appended notes"); confirm / close = your decision on this idea (user-only; close always archives the entry with your reason). The <…> parts are placeholders — replace them with your own text.',
-      ideasPropose: 'New idea (the engine-side channel)',
-      ideasProposeHint: 'A new idea has no id yet, so declare one in the title (e.g. "Title (id: my-idea)").',
-      iStudy: 'Studying',
-      iQuestioning: 'Needs info',
-      iPending: 'Awaiting breakdown',
-      iConverted: 'Turned into tasks',
-      iCovered: 'Covered',
-      graphCounts: '{n} nodes · {e} edges',
-      graphIncludeTerminal: 'Include finished tasks',
-      graphIncludeTerminalHint: 'Also draw completed / cancelled tasks (by default only active tasks and their direct neighbours are drawn)',
-      graphBackToAll: 'Back to full graph',
-      graphEmptyActive: 'No active tasks right now',
-      graphEmptyActiveHint: 'Turn on "Include finished tasks" to see the whole dependency graph ({n} finished tasks hidden here).',
-      graphHiddenTerminal: '{n} finished tasks hidden',
-      graphTruncated: 'Too many nodes — only the first {n} are drawn',
-      graphAnomalyTitle: 'Dependency anomalies (the engine does not block these; they are labelled here)',
-      graphCycle: 'Dependency cycle: ',
-      graphDangling: 'Depends on a missing task: ',
-      graphSelf: 'Task depends on itself: ',
-      graphMissing: '(missing)',
-      graphUnlayered: 'On a cycle or blocked by one — cannot be layered',
-      graphBlocked: 'blocks',
-      graphFocus: 'Focus',
-      graphFocusUpstream: 'upstream',
-      graphFocusDownstream: 'downstream',
-      graphOpenTask: 'Open detail',
-      graphHint: 'Click a node to see its upstream/downstream closure; "Back to full graph" returns to the active subgraph',
-      graphScrollLabel: 'Dependency graph scrollbar',
-      graphUnavailable: 'Dependency graph data unavailable',
-      graphLayerLabel: 'layer'
-    }
-
-    // ── 会话身份（FR-1.1）────────────────────────────────────────────────
+    const pickLocale = (index) => Object.fromEntries(Object.keys(I18N).map((key) => [key, I18N[key][index]]))
+    const zh = pickLocale(0)
+    const en = pickLocale(1)
+// ── 会话身份（FR-1.1）────────────────────────────────────────────────
     //
     // 本插件全部注册都落在 **session 作用域**：sidebar.right.pane.tab（keyed/session）、
     // .title、conversation.session.header.utilities（list/session）。
@@ -498,6 +327,8 @@ window.__ModuleLoader__.load({
 
     // ── 主题与排版 ───────────────────────────────────────────────────────
     // 只用 DSH 设计令牌（FR-11.3：不硬编码色值，亮/暗主题都可读）。
+    // 告警色（横幅 / 异常 / 审查多处复用，收成常量避免重复字面量）。
+    const WARN = 'var(--dsw-alias-state-warn-primary, currentColor)'
     const TOKEN = {
       label: 'var(--dsw-alias-label-primary, inherit)',
       labelSecondary: 'var(--dsw-alias-label-secondary, inherit)',
@@ -515,7 +346,7 @@ window.__ModuleLoader__.load({
     /** 四态 → 语义色令牌（FR-11.4；NFR-6.3 要求同时有文字）。 */
     const STATE_TOKEN = {
       ready: 'var(--dsw-alias-state-success-primary, currentColor)',
-      uninitialized: 'var(--dsw-alias-state-warn-primary, currentColor)',
+      uninitialized: WARN,
       broken: 'var(--dsw-alias-state-error-primary, currentColor)',
       not_installed: 'var(--dsw-alias-state-business-primary, currentColor)'
     }
@@ -525,7 +356,7 @@ window.__ModuleLoader__.load({
       pending: 'var(--dsw-alias-label-secondary, currentColor)',
       claimed: 'var(--dsw-alias-state-business-primary, currentColor)',
       done: 'var(--dsw-alias-state-success-tertiary, currentColor)',
-      in_review: 'var(--dsw-alias-state-warn-primary, currentColor)',
+      in_review: WARN,
       completed: 'var(--dsw-alias-state-success-primary, currentColor)',
       cancelled: 'var(--dsw-alias-label-dimmed, currentColor)'
     }
@@ -559,6 +390,10 @@ window.__ModuleLoader__.load({
       viewEntryActive: { border: `1px solid ${TOKEN.label}`, background: TOKEN.hover, color: TOKEN.label, fontWeight: 600 },
       // 依赖图的工具条：节点/边计数 + 「含终态任务」开关 + 「返回全图」
       graphToolbar: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', padding: '0 14px 8px', flex: '0 0 auto' },
+      // FR-14 镜头切换器 + 图例（复用 chipButton / note 皮肤，不另立一套）
+      graphLensRow: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', padding: '0 14px 8px', flex: '0 0 auto' },
+      graphLensActive: { background: TOKEN.hover, color: TOKEN.label, fontWeight: 600 },
+      legendRow: { display: 'flex', gap: 6, alignItems: 'baseline', flexWrap: 'wrap', fontSize: 11.5, color: TOKEN.labelSecondary },
       countValue: { fontVariantNumeric: 'tabular-nums', color: TOKEN.label, fontWeight: 600 },
       // ⚠ 弹层的定位上下文是 **控件容器**（styles.controls，position: relative），
       // 不是「筛选」按钮自己那个窄容器。踩过的坑：把 position:relative 放在按钮外层
@@ -1536,7 +1371,7 @@ window.__ModuleLoader__.load({
         head,
         // 降级说明（FR-3.4）：给出机器可读原因对应的人话
         unsupported
-          ? React.createElement('div', { key: 'why', style: { ...styles.note, padding: '4px 0 0', color: 'var(--dsw-alias-state-warn-primary, currentColor)' } },
+          ? React.createElement('div', { key: 'why', style: { ...styles.note, padding: '4px 0 0', color: WARN } },
               `${t('installDegradeReason')}${entry.reason ?? 'unknown'}`)
           : null,
         state === 'confirming'
@@ -1646,7 +1481,7 @@ window.__ModuleLoader__.load({
         : (verdict === 'CHANGES_REQUESTED' ? t('reviewChanges') : (verdict ?? '—'))
       const verdictColor = (verdict) => verdict === 'APPROVED'
         ? 'var(--dsw-alias-state-success-primary, currentColor)'
-        : (verdict === 'CHANGES_REQUESTED' ? 'var(--dsw-alias-state-warn-primary, currentColor)' : TOKEN.labelTertiary)
+        : (verdict === 'CHANGES_REQUESTED' ? WARN : TOKEN.labelTertiary)
 
       return React.createElement('section', {
         'data-orchd-review-timeline': 'true',
@@ -1889,17 +1724,52 @@ window.__ModuleLoader__.load({
     const GRAPH_GAP_X = 12
     const GRAPH_GAP_Y = 36
     const GRAPH_PAD = 10
+    const GRAPH_SEGMENT_GAP = 8 // 片间留白（§9.1）
+    const GRAPH_ZOOM_MIN = 0.25 // 缩放区间（§9.2）
+    const GRAPH_ZOOM_MAX = 2
+    const GRAPH_ZOOM_STEP = 1.25
+    const GRAPH_VIEWPORT_FALLBACK = 390 // 量不到宽时的兜底
+
+    function graphWrapColumns(maxWidth, labelWidth) {
+      if (typeof maxWidth !== 'number' || !Number.isFinite(maxWidth) || maxWidth <= 0) return null
+      return Math.max(1, Math.floor((maxWidth - GRAPH_PAD * 2 - labelWidth + GRAPH_GAP_X) / (GRAPH_NODE_W + GRAPH_GAP_X)))
+    }
+
+    // 行 → 视觉行（§9.1）：不插假边，宽度按最宽片算
+    function graphLayoutRows(rows, labelWidth, maxWidth) {
+      const wrap = graphWrapColumns(maxWidth, labelWidth)
+      const widest = rows.reduce((max, row) => Math.max(max, row?.nodes?.length ?? 0), 1)
+      const visual = []
+      const positions = new Map()
+      let cursor = GRAPH_PAD
+      let actualCols = 1
+      for (const row of rows) {
+        const nodes = row?.nodes ?? []
+        const per = wrap ?? Math.max(1, nodes.length)
+        const segments = Math.max(1, Math.ceil(nodes.length / per))
+        for (let segment = 0; segment < segments; segment += 1) {
+          const slice = nodes.slice(segment * per, (segment + 1) * per)
+          actualCols = Math.max(actualCols, slice.length)
+          visual.push({ ...row, segment, visualRow: visual.length, nodes: slice })
+          slice.forEach((node, index) => positions.set(node.id, {
+            x: GRAPH_PAD + labelWidth + index * (GRAPH_NODE_W + GRAPH_GAP_X), y: cursor, w: GRAPH_NODE_W, h: GRAPH_NODE_H
+          }))
+          cursor += GRAPH_NODE_H + GRAPH_GAP_Y + (segment < segments - 1 ? GRAPH_SEGMENT_GAP : 0)
+        }
+      }
+      const width = GRAPH_PAD * 2 + labelWidth + actualCols * GRAPH_NODE_W + (actualCols - 1) * GRAPH_GAP_X
+      return {
+        rows: visual, positions, width,
+        height: visual.length === 0 ? GRAPH_PAD * 2 : cursor - GRAPH_GAP_Y + GRAPH_PAD,
+        columns: wrap ?? widest, wrapped: visual.length > rows.length, visualRows: visual.length, levelRows: rows.length, segmentGap: GRAPH_SEGMENT_GAP
+      }
+    }
 
     /**
-     * 分层布局（纯函数，直接可测）。
-     *
-     * 层的依据是服务端算的**最长依赖深度** `level`；`level === null` 的节点（环上、或被环
-     * 阻塞而算不出层级）单独排到最后一行——给它们硬塞一个层级就是在图上撒谎。
-     *
+     * 分层布局（纯函数）：按服务端最长依赖深度 level 分行；level===null（环上/算不出层级）排最后一行，不硬塞层级。
      * @param {object} data `/orchd/api/graph` 的 `data`
-     * @returns {{ rows: Array<{level: number|null, nodes: object[]}>, positions: Map<string, {x:number,y:number,w:number,h:number}>, width: number, height: number, unlayered: number }}
      */
-    function layoutDependencyGraph(data) {
+    function layoutDependencyGraph(data, options) {
       const nodes = Array.isArray(data?.nodes) ? data.nodes : []
       const byLevel = new Map()
       const unlayered = []
@@ -1911,32 +1781,20 @@ window.__ModuleLoader__.load({
           unlayered.push(node)
         }
       }
-      const compare = (a, b) => String(a?.id ?? '').localeCompare(String(b?.id ?? ''))
+      // §10.3：importance 队内按服务端 importanceRank 降序、同档 id 升序；缺 rank 保留原序
+      const compare = (a, b) => {
+        if (data?.lens !== 'importance') return String(a?.id ?? '').localeCompare(String(b?.id ?? ''))
+        const ra = Number.isFinite(a?.importanceRank) ? a.importanceRank : null
+        const rb = Number.isFinite(b?.importanceRank) ? b.importanceRank : null
+        return ra === rb
+          ? (ra === null ? 0 : String(a?.id ?? '').localeCompare(String(b?.id ?? '')))
+          : (ra === null ? 1 : (rb === null ? -1 : rb - ra))
+      }
       const rows = [...byLevel.keys()].sort((a, b) => a - b)
         .map((level) => ({ level, nodes: byLevel.get(level).slice().sort(compare) }))
       if (unlayered.length > 0) rows.push({ level: null, nodes: unlayered.slice().sort(compare) })
 
-      const columns = rows.reduce((max, row) => Math.max(max, row.nodes.length), 1)
-      const width = GRAPH_PAD * 2 + columns * GRAPH_NODE_W + Math.max(0, columns - 1) * GRAPH_GAP_X
-      const height = GRAPH_PAD * 2 + rows.length * GRAPH_NODE_H + Math.max(0, rows.length - 1) * GRAPH_GAP_Y
-
-      const positions = new Map()
-      rows.forEach((row, rowIndex) => {
-        // 行**左对齐**：画布宽度由最宽的那层决定，而右侧栏只有 ~390px ⇒ 全图必然比视口宽。
-        // 若把窄层居中，未横向滚动时视口里看到的是一大片空白、节点被推到右边缘外
-        // （探针 pane-graph 实测：单节点层从 x=360 起步，等于要先横滚才能看见第一个节点）。
-        const startX = GRAPH_PAD
-        row.nodes.forEach((node, index) => {
-          positions.set(node.id, {
-            x: startX + index * (GRAPH_NODE_W + GRAPH_GAP_X),
-            y: GRAPH_PAD + rowIndex * (GRAPH_NODE_H + GRAPH_GAP_Y),
-            w: GRAPH_NODE_W,
-            h: GRAPH_NODE_H
-          })
-        })
-      })
-
-      return { rows, positions, width, height, unlayered: unlayered.length }
+      return { ...graphLayoutRows(rows, 0, options?.maxWidth), unlayered: unlayered.length }
     }
 
     /** 节点主标题：名字缺失时退回 id（FR-5.7 的占位符纪律）。 */
@@ -1945,12 +1803,7 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 文本宽度（以**半角字符**为单位；全角/宽字符算 2）。
-     *
-     * 节点框宽是固定的 128px（内边距各 8px ⇒ 可用 112px），而按**字符数**截断是错的：
-     * 11.5px 字号下一个中文字约占 11.3px、半角约 6.4px，所以「15 个中文字」实测要 169px
-     * —— 文字直接压出框、盖住旁边的节点（探针 `dev/render-pane.mjs` 的 pane-graph 变体
-     * 实测溢出 57.4px）。按宽度折算才能中英混排都不出框。
+     * 文本宽度（半角单位；全角/宽字符算 2）：节点框固定 128px，按字符数截断会溢出，必须按宽度折算。
      */
     function graphTextUnits(value) {
       // 全角/宽字符的码点区间（CJK 汉字、假名、谚文、全角标点等）
@@ -1958,11 +1811,7 @@ window.__ModuleLoader__.load({
         units + (/[\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA000-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE6F\uFF00-\uFF60\uFFE0-\uFFE6]/.test(char) ? 2 : 1), 0)
     }
 
-    /**
-     * 节点内的文本截断：按上表的**宽度单位**截，截断后加省略号。
-     *
-     * 口径：省略号本身按 1 个单位计入上限（保守一点，宁可少画一个字也不出框）。
-     */
+    /** 节点文本截断：按宽度单位截，省略号本身占 1 单位（宁少一字也不出框）。 */
     function truncateLabel(text, maxUnits) {
       const value = String(text ?? '')
       if (graphTextUnits(value) <= maxUnits) return value
@@ -1978,12 +1827,7 @@ window.__ModuleLoader__.load({
       return `${out}…`
     }
 
-    /**
-     * 异常 → 可渲染的行（UI 与单测共用同一份文案映射）。
-     *
-     * FR-7.7 要求「必须标注」：三类异常各自点名具体的任务 id，并且**可以点**（跳详情/聚焦），
-     * 不是一句「存在异常」了事。
-     */
+    /** 异常 → 可渲染行（UI 与单测共用映射）；FR-7.7 要求点名具体任务 id 且可点，不是一句「存在异常」。 */
     function graphAnomalyRows(data, t) {
       const labelKey = { cycle: 'graphCycle', dangling: 'graphDangling', self: 'graphSelf' }
       return (Array.isArray(data?.anomalies) ? data.anomalies : []).map((anomaly, index) => ({
@@ -1994,31 +1838,174 @@ window.__ModuleLoader__.load({
       }))
     }
 
-    /**
-     * 依赖图视图（FR-7）。
-     *
-     * 数据全部来自服务端的 `/orchd/api/graph`：边来自定义文件、阻塞数来自 `pool --all`、
-     * 环/悬空/自依赖也在服务端检测（前端只负责画与标注，FR-7.5 的「不猜算」）。
-     *
-     * 交互：
-     *   - 点节点 = 聚焦它的上下游闭包（重新请求 `focus=<id>`，拿到服务端算好的闭包）；
-     *   - 点焦点信息条上的「打开详情」= 复用任务详情（FR-6 的下钻）；
-     *   - 「含终态任务」开关 = 重画全图（FR-7.6 的默认子图 + 显式展开）。
-     */
-    function DependencyGraph({ data, t, onOpenTask, onFocus, onBackToAll, includeTerminal, onToggleTerminal }) {
-      const nodes = Array.isArray(data?.nodes) ? data.nodes : []
-      const counts = data?.counts ?? {}
-      const focusInfo = data?.focus ?? null
-      const focusId = typeof focusInfo?.id === 'string' ? focusInfo.id : null
-      const layout = layoutDependencyGraph(data)
-      const anomalyRows = graphAnomalyRows(data, t)
+    // ── FR-14 图谱镜头（纯函数，直接可测；投影一律由服务端组装，这里只做渲染前整形）──
+    const GRAPH_LENS_ORDER = ['chain', 'umbrella', 'wave', 'importance', 'files']
+    const GRAPH_LENS_I18N = { chain: 'graphLensChain', umbrella: 'graphLensUmbrella', wave: 'graphLensWave', importance: 'graphLensImportance', files: 'graphLensFiles' }
+    const GRAPH_EDGE_LEGEND_I18N = { depends_on: 'graphLegendDependsOn', depends_on_aggregated: 'graphLegendAggregated', sourced_from: 'graphLegendSourcedFrom', touches: 'graphLegendTouches' }
+    const GRAPH_ANOMALY_MAX_IDS = 8 // 异常行内联的 id 上限：环可能吞掉上百个节点，全列会把图挤出首屏
 
-      const toolbar = React.createElement('div', { key: 'bar', style: styles.graphToolbar, 'data-orchd-graph-toolbar': 'true' }, [
-        React.createElement('span', { key: 'c', style: { fontSize: 11.5, color: TOKEN.labelTertiary } },
-          t('graphCounts').replace('{n}', String(counts.nodes ?? nodes.length)).replace('{e}', String(counts.edges ?? 0))),
-        React.createElement('span', { key: 'sp', style: styles.spacer }),
-        React.createElement('label', { key: 't', style: styles.radioItem, title: t('graphIncludeTerminalHint') }, [
-          React.createElement('input', {
+    const GRAPH_WAVE_LABEL_W = 52 // 左侧「第 N 波」标签槽宽：节点从槽右侧起步，文字不叠在节点上
+
+    /** 可用镜头：只返回服务端标 available 的项（契约 §6.1）；老服务端无 lenses → 退回只有 chain。 */
+    function graphLensOptions(data) {
+      if (!Array.isArray(data?.lenses)) return [{ id: 'chain', available: true, reason: null }]
+      const byId = new Map()
+      for (const entry of data.lenses) {
+        const id = typeof entry?.id === 'string' ? entry.id : null
+        // 契约外的 id 与不可用镜头都不渲染：画一个点了会 400 的按钮等于骗用户
+        if (id === null || !GRAPH_LENS_ORDER.includes(id) || entry.available !== true) continue
+        if (!byId.has(id)) byId.set(id, { id, available: true, reason: typeof entry.reason === 'string' ? entry.reason : null })
+      }
+      return GRAPH_LENS_ORDER.filter((id) => byId.has(id)).map((id) => byId.get(id))
+    }
+
+    /** 波次布局：行 = 服务端 wave、行内顺序 = waveRank（前端绝不重排）；wave 非法 / level===null → 末行「未分层」。 */
+    function layoutWaveGraph(data, options) {
+      const nodes = Array.isArray(data?.nodes) ? data.nodes : []
+      const byWave = new Map()
+      const unlayered = []
+      for (const node of nodes) {
+        const wave = Number.isInteger(node?.wave) ? node.wave : (Number.isInteger(node?.level) ? node.level : null)
+        if (wave === null) { unlayered.push(node); continue }
+        if (!byWave.has(wave)) byWave.set(wave, [])
+        byWave.get(wave).push(node)
+      }
+      // 排序口径是契约的一部分（服务端按重要度 → 难度 → id 排好），这里只按 waveRank 稳定排序
+      const rank = (list) => list
+        .map((node, index) => ({ node, index, rank: Number.isInteger(node?.waveRank) ? node.waveRank : Number.MAX_SAFE_INTEGER }))
+        .sort((a, b) => (a.rank - b.rank) || (a.index - b.index))
+        .map((entry) => entry.node)
+      const rows = [...byWave.keys()].sort((a, b) => a - b).map((wave) => ({ wave, nodes: rank(byWave.get(wave)) }))
+      if (unlayered.length > 0) rows.push({ wave: null, nodes: rank(unlayered) })
+      const base = graphLayoutRows(rows, GRAPH_WAVE_LABEL_W, options?.maxWidth)
+      const waveLabels = base.rows.filter((row) => row.segment === 0).map((row) => ({
+        key: row.wave === null ? 'unlayered' : `w${row.wave}`, wave: row.wave, x: GRAPH_PAD,
+        y: base.positions.get(row.nodes[0].id).y + GRAPH_NODE_H / 2 + 4
+      }))
+      // 截断只透传服务端 projection.wave；缺省按实画行数兜底
+      const wave = data?.projection?.wave ?? null
+      const count = rows.filter((row) => row.wave !== null).length
+      return {
+        ...base, waveLabels, unlayered: unlayered.length, truncated: wave?.truncated === true,
+        total: Number.isInteger(wave?.total) ? wave.total : count,
+        shown: Number.isInteger(wave?.shown) ? wave.shown : count
+      }
+    }
+
+    /** 文件冲突二部图（§10.4）：上段文件网格按 maxWidth 折列、下段任务沿用分层折行；两段间留边走廊。 */
+    function layoutFilesGraph(data, options) {
+      const nodes = Array.isArray(data?.nodes) ? data.nodes : []
+      const files = nodes.filter((node) => node?.kind === 'file')
+      const fileGrid = graphLayoutRows(files.length === 0 ? [] : [{ level: 'files', nodes: files }], 0, options?.maxWidth)
+      const taskGrid = layoutDependencyGraph({ ...data, nodes: nodes.filter((node) => node?.kind !== 'file') }, options)
+      // 任务段整体下移到文件段下方；文件为空时偏移 0（与 chain 布局逐项等价）
+      const part = files.length === 0 ? 0 : fileGrid.height - GRAPH_PAD
+      const positions = new Map(fileGrid.positions)
+      for (const [id, position] of taskGrid.positions) positions.set(id, { ...position, y: position.y + part })
+      return {
+        rows: fileGrid.rows.concat(taskGrid.rows.map((row) => ({ ...row, visualRow: row.visualRow + fileGrid.visualRows }))),
+        positions, width: Math.max(fileGrid.width, taskGrid.width), height: Math.max(fileGrid.height, taskGrid.height + part),
+        columns: fileGrid.columns, wrapped: fileGrid.wrapped || taskGrid.wrapped,
+        visualRows: fileGrid.visualRows + taskGrid.visualRows, levelRows: fileGrid.levelRows + taskGrid.levelRows,
+        segmentGap: GRAPH_SEGMENT_GAP, unlayered: taskGrid.unlayered
+      }
+    }
+
+    /** 伞标签：服务端已把 name 退化为 title ?? slug，前端不再二次判断标题；只有 name 为空才退到 slug / id。 */
+    function umbrellaNodeLabel(node) {
+      if (typeof node?.name === 'string' && node.name !== '') return node.name
+      if (typeof node?.slug === 'string' && node.slug !== '') return node.slug
+      return typeof node?.id === 'string' && node.id !== '' ? node.id : '—'
+    }
+
+    /** 图例行：优先服务端 edgeKinds（权威口径），缺省时只统计 edges 的 kind；projected 行必须标注「投影边」。 */
+    function graphLegendRows(data, t) {
+      const tr = typeof t === 'function' ? t : (key) => key
+      let entries
+      if (Array.isArray(data?.edgeKinds) && data.edgeKinds.length > 0) {
+        entries = data.edgeKinds.map((entry) => ({
+          kind: typeof entry?.kind === 'string' ? entry.kind : '',
+          count: Number.isFinite(entry?.count) ? entry.count : 0,
+          projected: entry?.projected === true
+        }))
+      } else {
+        // 老服务端没有 edgeKinds：只按 edges 里出现的 kind 计数，不新增/不猜任何边
+        const stats = new Map()
+        for (const edge of Array.isArray(data?.edges) ? data.edges : []) {
+          const kind = typeof edge?.kind === 'string' && edge.kind !== '' ? edge.kind : 'depends_on'
+          const seen = stats.get(kind) ?? { kind, count: 0, projected: false }
+          stats.set(kind, { kind, count: seen.count + 1, projected: seen.projected || edge?.projected === true })
+        }
+        entries = [...stats.values()]
+      }
+      return entries
+        .filter((entry) => entry.kind !== '')
+        .sort((a, b) => a.kind.localeCompare(b.kind))
+        .map((entry) => ({
+          kind: entry.kind,
+          count: entry.count,
+          projected: entry.projected,
+          text: tr(GRAPH_EDGE_LEGEND_I18N[entry.kind] ?? 'graphLegendEdge'),
+          note: entry.projected === true ? tr('graphLegendProjectedNote') : null,
+          dash: entry.kind === 'depends_on_aggregated' ? 'dashed' : (entry.kind === 'sourced_from' ? 'dotted' : 'solid')
+        }))
+    }
+
+    /** 关键路径摘要（§11.2）：三态文案与渲染共用；taskCount<2 或缺失视为无链（text=null）。 */
+    function graphCriticalPathText(criticalPath, t) {
+      const path = criticalPath ?? null
+      if (path === null || !Number.isInteger(path.taskCount) || path.taskCount < 2) return { text: null, hours: null }
+      const tr = typeof t === 'function' ? t : (key) => key
+      const head = tr('graphCriticalPath')
+        .replace('{tasks}', String(path.taskCount))
+        .replace('{levels}', String(Number.isInteger(path.levelCount) ? path.levelCount : 0))
+      const hours = Number.isFinite(path.estimatedHours) && path.estimatedHours > 0 ? path.estimatedHours : null
+      if (hours !== null) return { text: `${head} · ${tr('graphCriticalPathHours').replace('{hours}', String(hours))}`, hours }
+      if (Number.isInteger(path.missingHours) && path.missingHours > 0) {
+        return { text: `${head} · ${tr('graphCriticalPathMissing').replace('{missing}', String(path.missingHours))}`, hours: null }
+      }
+      return { text: head, hours: null }
+    }
+
+    /** 语义缩放（§9.3）。 */
+    function graphLabelMode(scale) {
+      if (typeof scale !== 'number' || !Number.isFinite(scale)) return 'full'
+      if (scale >= 0.75) return 'full'
+      if (scale >= 0.45) return 'compact'
+      return 'blocks'
+    }
+
+    /**
+     * 依赖图视图（FR-7 / FR-14）：只做派生 + 组合；数据与投影由服务端算好，前端不猜算（FR-7.5）。
+     * R20：三种镜头 + 经典视图共用同一 SVG 绘制点与布局纯函数，经典视图必然是现行渲染原样（FR-14.9）。
+     */
+    // 渲染别名（等价 React.createElement）
+    const el = React.createElement
+
+    // 依赖图子组件（R20：经典视图与镜头视图共用同一 SVG 绘制点与布局纯函数）
+
+    // 镜头切换器：只列服务端标 available 的镜头，顺序由 GRAPH_LENS_ORDER 钉死
+    function GraphLensSwitcher({ t, options, activeLens, onSelectLens }) {
+      return el('div', {
+        style: styles.graphLensRow, role: 'group', 'aria-label': t('graphLensLabel')
+      }, options.map((option) => el('button', {
+        key: option.id,
+        type: 'button',
+        'data-orchd-graph-lens': option.id,
+        'aria-pressed': activeLens === option.id ? 'true' : 'false',
+        style: activeLens === option.id ? { ...styles.chipButton, ...styles.graphLensActive } : styles.chipButton,
+        onClick: () => onSelectLens(option.id)
+      }, t(GRAPH_LENS_I18N[option.id] ?? 'graphLensChain'))))
+    }
+
+    // 工具条：节点/边计数 + 含终态任务 + 经典视图开关（开 → 强制 chain 并隐藏切换器）+ 返回全图
+    function GraphToolbar({ t, counts, nodeCount, includeTerminal, onToggleTerminal, classicMode, onToggleClassic, focusId, onBackToAll }) {
+      return el('div', { style: styles.graphToolbar, 'data-orchd-graph-toolbar': 'true' }, [
+        el('span', { key: 'c', style: { fontSize: 11.5, color: TOKEN.labelTertiary } },
+          t('graphCounts').replace('{n}', String(counts.nodes ?? nodeCount)).replace('{e}', String(counts.edges ?? 0))),
+        el('span', { key: 'sp', style: styles.spacer }),
+        el('label', { key: 't', style: styles.radioItem, title: t('graphIncludeTerminalHint') }, [
+          el('input', {
             key: 'cb',
             type: 'checkbox',
             checked: includeTerminal === true,
@@ -2027,9 +2014,20 @@ window.__ModuleLoader__.load({
           }),
           t('graphIncludeTerminal')
         ]),
+        // 经典视图：开 = 强制 chain + 隐藏切换器，渲染与布局回到现行版本（FR-14.9）
+        el('label', { key: 'classic', style: styles.radioItem }, [
+          el('input', {
+            key: 'cb',
+            type: 'checkbox',
+            checked: classicMode,
+            'data-orchd-graph-classic': 'toggle',
+            onChange: (event) => onToggleClassic(event.target.checked)
+          }),
+          t('graphClassic')
+        ]),
         focusId === null
           ? null
-          : React.createElement('button', {
+          : el('button', {
               key: 'back',
               type: 'button',
               style: styles.filterEntry,
@@ -2037,55 +2035,96 @@ window.__ModuleLoader__.load({
               onClick: onBackToAll
             }, t('graphBackToAll'))
       ].filter(Boolean))
+    }
 
-      const banners = [
+    // 横幅 + 异常提示：构造扁平节点数组（空态时父组件不渲染这一段，避免与空态文案重复）
+    function graphBannerNodes({ t, counts, layout, waveProjection, umbrellaProjection, filesProjection, expandedUmbrella, anomalyRows, onFocus, onSelectUmbrella }) {
+      return [
         // 隐藏了终态任务 → 说清楚（否则用户会以为图本身就是全部）
         counts.hiddenTerminal > 0
-          ? React.createElement('div', {
+          ? el('div', {
               key: 'hidden',
               style: styles.note,
               'data-orchd-graph-hidden': String(counts.hiddenTerminal)
             }, t('graphHiddenTerminal').replace('{n}', String(counts.hiddenTerminal)))
           : null,
         counts.omittedByLimit > 0
-          ? React.createElement('div', {
+          ? el('div', {
               key: 'limit',
-              style: { ...styles.note, color: 'var(--dsw-alias-state-warn-primary, currentColor)' },
+              style: { ...styles.note, color: WARN },
               'data-orchd-graph-truncated': String(counts.omittedByLimit)
             }, t('graphTruncated').replace('{n}', String(counts.nodes)))
           : null,
+        // FR-14.4：波次被 maxWaves 截断 → 写明「共 N 波，显示前 M 波」，不许默默少画
+        waveProjection?.truncated === true ? el('div', {
+          key: 'wave-truncated', style: { ...styles.note, color: WARN },
+          'data-orchd-graph-wave-truncated': String(waveProjection.total)
+        }, t('graphWaveTruncated').replace('{n}', String(waveProjection.total)).replace('{m}', String(waveProjection.shown))) : null,
+        // §10.4：maxFiles 截断显式计数（文件/任务数都不许静默丢）
+        filesProjection?.filesOmitted > 0 ? el('div', { key: 'files-truncated', style: { ...styles.note, color: WARN }, 'data-orchd-graph-files-truncated': String(filesProjection.filesOmitted) },
+          t('graphFileTruncated').replace('{n}', String(filesProjection.filesTotal)).replace('{m}', String(filesProjection.filesShown)).replace('{k}', String(filesProjection.tasksShown))) : null,
+        // FR-14.3：标题缺失是显式降级（显示 slug）→ 计数，不许猜标题
+        umbrellaProjection?.missingTitle > 0 ? el('div', {
+          key: 'umbrella-missing-title', style: { ...styles.note, color: WARN },
+          'data-orchd-graph-missing-title': String(umbrellaProjection.missingTitle)
+        }, t('graphUmbrellaMissingTitleCount').replace('{n}', String(umbrellaProjection.missingTitle))) : null,
+        // 没有来源伞的任务不参与投影，但不许静默丢（契约 §3.3）
+        umbrellaProjection?.unattributedTasks > 0 ? el('div', {
+          key: 'umbrella-unattributed', style: styles.note,
+          'data-orchd-graph-unattributed': String(umbrellaProjection.unattributedTasks)
+        }, t('graphUmbrellaUnattributed').replace('{n}', String(umbrellaProjection.unattributedTasks))) : null,
+        // 展开态可见 + 一键收起（再点伞或点这里都清空）
+        expandedUmbrella !== null ? el('div', {
+          key: 'umbrella-expanded', style: styles.note,
+          'data-orchd-graph-umbrella-expanded': expandedUmbrella
+        }, [
+          `${t('graphUmbrellaExpanded').replace('{n}', expandedUmbrella)} `,
+          el('button', {
+            key: 'c',
+            type: 'button',
+            style: styles.chipButton,
+            'data-orchd-graph-umbrella-collapse': 'true',
+            onClick: () => onSelectUmbrella(null)
+          }, t('graphUmbrellaCollapse'))
+        ].filter(Boolean)) : null,
         layout.unlayered > 0
-          ? React.createElement('div', { key: 'unlayered', style: styles.note, 'data-orchd-graph-unlayered': String(layout.unlayered) }, t('graphUnlayered'))
+          ? el('div', { key: 'unlayered', style: styles.note, 'data-orchd-graph-unlayered': String(layout.unlayered) }, t('graphUnlayered'))
           : null,
         anomalyRows.length === 0
           ? null
-          : React.createElement('div', {
+          : el('div', {
               key: 'anomalies',
-              style: { ...styles.note, color: 'var(--dsw-alias-state-warn-primary, currentColor)' },
+              style: { ...styles.note, color: WARN },
               'data-orchd-graph-anomalies': String(anomalyRows.length)
             }, [
-              React.createElement('div', { key: 'h' }, t('graphAnomalyTitle')),
-              ...anomalyRows.map((row) => React.createElement('div', { key: row.key, 'data-orchd-graph-anomaly': row.kind }, [
-                React.createElement('span', { key: 'l' }, row.text),
-                ...row.ids.map((id) => React.createElement('button', {
+              el('div', { key: 'h' }, t('graphAnomalyTitle')),
+              ...anomalyRows.map((row) => el('div', { key: row.key, 'data-orchd-graph-anomaly': row.kind }, [
+                el('span', { key: 'l' }, row.text),
+                ...row.ids.slice(0, GRAPH_ANOMALY_MAX_IDS).map((id) => el('button', {
                   key: `i-${id}`,
                   type: 'button',
                   style: { ...styles.chipButton, marginRight: 4 },
                   onClick: () => onFocus(id)
-                }, id))
+                }, id)),
+                row.ids.length > GRAPH_ANOMALY_MAX_IDS
+                  ? el('span', { key: 'more', 'data-orchd-graph-anomaly-more': String(row.ids.length - GRAPH_ANOMALY_MAX_IDS) },
+                      t('graphAnomalyMore').replace('{n}', String(row.ids.length - GRAPH_ANOMALY_MAX_IDS)))
+                  : null
               ]))
             ])
       ].filter(Boolean)
+    }
 
-      const focusBar = focusId === null ? null : React.createElement('div', {
-        key: 'focus',
+    // 聚焦条：说明当前闭包的上下游规模，并提供「打开详情」下钻
+    function GraphFocusBar({ t, focusId, focusInfo, onOpenTask }) {
+      return focusId === null ? null : el('div', {
         style: { ...styles.note, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' },
         'data-orchd-graph-focus': focusId
       }, [
-        React.createElement('span', { key: 'id', style: { ...styles.mono, color: TOKEN.label } }, `${t('graphFocus')} ${focusId}`),
-        React.createElement('span', { key: 'u' }, `${t('graphFocusUpstream')} ${focusInfo.upstream.length}`),
-        React.createElement('span', { key: 'd' }, `${t('graphFocusDownstream')} ${focusInfo.downstream.length}`),
-        React.createElement('button', {
+        el('span', { key: 'id', style: { ...styles.mono, color: TOKEN.label } }, `${t('graphFocus')} ${focusId}`),
+        el('span', { key: 'u' }, `${t('graphFocusUpstream')} ${focusInfo.upstream.length}`),
+        el('span', { key: 'd' }, `${t('graphFocusDownstream')} ${focusInfo.downstream.length}`),
+        el('button', {
           key: 'open',
           type: 'button',
           style: styles.chipButton,
@@ -2093,26 +2132,142 @@ window.__ModuleLoader__.load({
           onClick: () => onOpenTask(focusId)
         }, t('graphOpenTask'))
       ])
+    }
 
-      // ⚠ 空态**也必须带上工具条**：提示语叫用户去开「含终态任务」，而开关就在工具条里。
-      //   原来这里提前 return 了，于是提示指着一个**根本没渲染**的开关（用户实测：
-      //   「把『含终态任务』打开可以看完整依赖图」却没看到这个开关）——空态恰恰最需要它。
-      const emptyBlock = React.createElement('div', { key: 'empty', 'data-orchd-graph-empty': 'true', style: { flex: '1 1 auto', minHeight: 0 } }, [
-        React.createElement('div', { key: 'n', style: styles.note }, t('graphEmptyActive')),
-        React.createElement('div', { key: 'h', style: styles.note }, t('graphEmptyActiveHint').replace('{n}', String(counts.hiddenTerminal ?? 0)))
+    // 空态：**也必须带上工具条**（提示语让用户去开「含终态任务」，开关就在工具条里）
+    function GraphEmptyState({ t, counts }) {
+      return el('div', { 'data-orchd-graph-empty': 'true', style: { flex: '1 1 auto', minHeight: 0 } }, [
+        el('div', { key: 'n', style: styles.note }, t('graphEmptyActive')),
+        el('div', { key: 'h', style: styles.note }, t('graphEmptyActiveHint').replace('{n}', String(counts.hiddenTerminal ?? 0)))
       ])
+    }
 
-      const svg = React.createElement('svg', {
-        key: 'svg',
-        width: layout.width,
-        height: layout.height,
+    // 图例：每条画出来的线都要能解释；projected 边写明「不是逐条 depends_on 事实」（R19）
+    function GraphLegend({ t, rows }) {
+      if (rows.length === 0) return null
+      return el('div', {
+        style: { ...styles.note, display: 'flex', flexDirection: 'column', gap: 4 }
+      }, rows.map((row) => el('div', {
+        key: row.kind, style: styles.legendRow, 'data-orchd-graph-legend': row.kind
+      }, [
+        el('span', { key: 's', style: { width: 22, borderTopWidth: 2, borderTopColor: TOKEN.border, borderTopStyle: row.dash } }),
+        el('span', { key: 't' }, row.text),
+        row.count === null ? null : el('span', { key: 'c', style: { ...styles.mono, color: TOKEN.labelTertiary } }, `×${row.count}`),
+        row.note === null ? null : el('span', { key: 'n', style: { ...styles.hint, flexBasis: '100%' } }, row.note)
+      ].filter(Boolean))))
+    }
+
+    // 卡片文字（§9.3）
+    function graphCardTexts(position, l1, l2, l2fill, labelMode) {
+      const x = position.x + 8
+      return [
+        labelMode === 'blocks' ? null : el('text', { key: 'l1', x, y: position.y + 17, fontSize: 11.5, fill: TOKEN.label }, l1),
+        labelMode === 'full' ? el('text', { key: 'l2', x, y: position.y + 31, fontSize: 10.5, fill: l2fill }, l2) : null
+      ]
+    }
+
+    // 伞卡片：name（服务端已做 title/slug 退化）+ 任务数；missingTitle 只做显式标记，不猜标题
+    function GraphUmbrellaCard({ t, node, position, expandedUmbrella, onSelectUmbrella, labelMode }) {
+      const label = umbrellaNodeLabel(node)
+      const umbrellaId = typeof node.umbrellaId === 'string' ? node.umbrellaId : null
+      const isExpanded = umbrellaId !== null && umbrellaId === expandedUmbrella
+      const subLabel = node.missingTitle === true
+        ? t('graphUmbrellaMissingTitle')
+        : t('graphUmbrellaCount').replace('{n}', String(Number.isInteger(node.count) ? node.count : (node.totalCount ?? 0)))
+      const toggle = () => onSelectUmbrella(isExpanded ? null : umbrellaId)
+      return el('g', {
+        role: 'button',
+        tabIndex: 0,
+        style: { cursor: 'pointer' },
+        'data-orchd-graph-node': node.id,
+        'data-orchd-graph-umbrella': umbrellaId ?? node.id,
+        'data-orchd-graph-missing-title': node.missingTitle === true ? '1' : '0',
+        'aria-pressed': isExpanded ? 'true' : 'false',
+        'aria-label': `${t('graphLensUmbrella')} ${node.id} ${label}`,
+        onClick: toggle,
+        onKeyDown: (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            toggle()
+          }
+        }
+      }, [
+        el('title', { key: 't' }, `${node.id} · ${label} · ${subLabel}`),
+        el('rect', {
+          key: 'r',
+          x: position.x, y: position.y, width: position.w, height: position.h, rx: 6, ry: 6,
+          fill: isExpanded ? TOKEN.hover : TOKEN.surface2,
+          stroke: node.missingTitle === true ? STATE_TOKEN.uninitialized : TOKEN.labelSecondary,
+          strokeWidth: isExpanded ? 2 : 1,
+          strokeDasharray: node.missingTitle === true ? '4 3' : undefined
+        }),
+        ...graphCardTexts(position, truncateLabel(label, 17), truncateLabel(subLabel, 19),
+          node.missingTitle === true ? STATE_TOKEN.uninitialized : TOKEN.labelTertiary, labelMode)
+      ])
+    }
+
+    // 任务卡片：链/波次里点节点 = 聚焦闭包；伞镜头里成员任务可点开详情（FR-6 下钻）
+    function GraphTaskCard({ t, node, position, focusId, activeLens, onOpenTask, onFocus, labelMode }) {
+      const color = node.missing === true ? STATE_TOKEN.broken : (STATUS_TOKEN[node.status] ?? TOKEN.labelTertiary)
+      const isFocus = node.id === focusId
+      const onChain = node.relation === 'upstream' || node.relation === 'downstream' || node.relation === 'both'
+      const label = graphNodeLabel(node)
+      // §10.3：显式重要度优先于推导；两者都没有就不画徽标（不猜档位）
+      const importance = node.importance == null ? (node.importanceDerived === true ? 'derived' : null) : 'explicit'
+      const blocked = node.blockedDownstream > 0 ? ` · ${t('graphBlocked')} ${node.blockedDownstream}` : ''
+      return el('g', {
+        role: 'button',
+        tabIndex: 0,
+        'data-orchd-graph-node': node.id,
+        'data-orchd-graph-relation': node.relation ?? 'none',
+        'aria-label': `${node.id} ${label}`,
+        style: { cursor: 'pointer' },
+        onClick: activeLens === 'umbrella' || activeLens === 'files' ? () => onOpenTask(node.id) : () => onFocus(node.id),
+        onKeyDown: (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            if (activeLens === 'umbrella' || activeLens === 'files') onOpenTask(node.id)
+            else onFocus(node.id)
+          }
+        }
+      }, [
+        el('title', { key: 't' }, `${node.id} · ${label}${blocked}${node.missing === true ? t('graphMissing') : ''}`),
+        el('rect', { key: 'r', x: position.x, y: position.y, width: position.w, height: position.h, rx: 6, ry: 6, fill: isFocus || onChain ? TOKEN.hover : TOKEN.surface2, stroke: color, strokeWidth: isFocus ? 2 : 1, strokeDasharray: node.missing === true ? '4 3' : undefined }),
+        importance === null ? null : el('g', { key: 'imp', 'data-orchd-graph-importance': importance }, [
+          el('rect', { key: 'b', x: position.x + position.w - 21, y: position.y + 4, width: 17, height: 11, rx: 2, fill: TOKEN.surface3, stroke: color }),
+          el('text', { key: 'l', x: position.x + position.w - 12.5, y: position.y + 12, fontSize: 8, textAnchor: 'middle', fill: TOKEN.label }, t(importance === 'explicit' ? 'graphImportanceExplicit' : 'graphImportanceDerived'))
+        ]),
+        ...graphCardTexts(position, truncateLabel(label, 17),
+          truncateLabel(node.missing === true ? t('graphMissing') : `${node.id}${blocked}`, 19), TOKEN.labelTertiary, labelMode)
+      ])
+    }
+
+    // 文件卡片（§10.4）：basename + 「N 个任务」；投影顶点不是任务，不可聚焦
+    function GraphFileCard({ t, node, position, labelMode }) {
+      const name = node?.name || node?.path || node?.id || '—'
+      const sub = t('graphUmbrellaCount').replace('{n}', String(Number.isInteger(node?.tasks) ? node.tasks : 0))
+      return el('g', { 'data-orchd-graph-node': node.id, 'data-orchd-graph-file': node?.path ?? node.id }, [
+        el('rect', { key: 'r', x: position.x, y: position.y, width: position.w, height: position.h, rx: 6, ry: 6, fill: TOKEN.surface3, stroke: TOKEN.labelSecondary, strokeWidth: 1, strokeDasharray: '2 2' }),
+        ...graphCardTexts(position, truncateLabel(name, 17), truncateLabel(sub, 19), TOKEN.labelTertiary, labelMode)
+      ])
+    }
+
+    // SVG 图层（唯一绘制点）：波次标签 / 边（线型承载边种类）/ 节点卡片；canvas 层替换的接缝
+    function GraphSvgLayer({ t, data, layout, focusId, activeLens, expandedUmbrella, onOpenTask, onFocus, onSelectUmbrella, scale, labelMode }) {
+      const nodes = Array.isArray(data?.nodes) ? data.nodes : []
+      // 只缩放外框，viewBox 保持逻辑尺寸（§9.2/§9.3）
+      const scaled = Number.isFinite(scale) && scale > 0 ? scale : 1
+      const mode = labelMode === 'compact' || labelMode === 'blocks' ? labelMode : 'full'
+      return el('svg', {
+        width: layout.width * scaled,
+        height: layout.height * scaled,
         viewBox: `0 0 ${layout.width} ${layout.height}`,
         role: 'img',
         'aria-label': t('viewGraph'),
         'data-orchd-graph': 'svg',
         style: { color: TOKEN.labelTertiary, display: 'block' }
       }, [
-        React.createElement('defs', { key: 'defs' }, React.createElement('marker', {
+        el('defs', { key: 'defs' }, el('marker', {
           id: 'orchd-graph-arrow',
           markerWidth: 6,
           markerHeight: 6,
@@ -2120,109 +2275,184 @@ window.__ModuleLoader__.load({
           refY: 3,
           orient: 'auto',
           markerUnits: 'strokeWidth'
-        }, React.createElement('path', { d: 'M0,0 L6,3 L0,6 z', fill: 'currentColor' }))),
-        // 边：上游底边中点 → 下游顶边中点（自环画成一个回环）
+        }, el('path', { d: 'M0,0 L6,3 L0,6 z', fill: 'currentColor' }))),
+        // FR-14.4：每波一条标签，画在左侧槽位（节点从槽右侧起步），波次值不重排。
+        ...(mode !== 'blocks' && Array.isArray(layout.waveLabels) ? layout.waveLabels : []).map((row) => el('text', {
+          key: `wl-${row.key}`,
+          x: row.x,
+          y: row.y,
+          fontSize: 11,
+          fill: TOKEN.labelTertiary,
+          'data-orchd-graph-wave': row.wave === null ? 'unlayered' : String(row.wave)
+        }, row.wave === null ? t('graphWaveUnlayered') : t('graphWaveLabel').replace('{n}', String(row.wave)))),
+        // 边：上游底边中点 → 下游顶边中点（自环画成回环）。线型承载边种类（R19）：
+        // depends_on 实线 / 聚合边虚线 + weight / sourced_from 点线；投影边弱化且不带箭头（不冒充逐条事实）。
         ...(Array.isArray(data?.edges) ? data.edges : []).map((edge, index) => {
           const from = layout.positions.get(edge.from)
           const to = layout.positions.get(edge.to)
           if (from === undefined || to === undefined) return null
+          const kind = typeof edge.kind === 'string' && edge.kind !== '' ? edge.kind : 'depends_on'
           const x1 = from.x + from.w / 2
           const y1 = from.y + from.h
           const x2 = to.x + to.w / 2
           const y2 = to.y
           const bend = Math.max(10, Math.abs(y2 - y1) / 2)
-          const d = edge.from === edge.to
-            ? `M ${x1} ${y1} C ${x1 + 46} ${y1 + 26} ${x1 + 46} ${y1 - 26} ${x1 + 6} ${y1 - 6}`
-            : `M ${x1} ${y1} C ${x1} ${y1 + bend} ${x2} ${y2 - bend} ${x2} ${y2}`
-          return React.createElement('path', {
+          // §10.4：touches 是「任务 ↔ 文件」的实线，从文件卡片右缘直线连到任务卡片左缘
+          const d = kind === 'touches'
+            ? `M ${from.x + from.w} ${from.y + from.h / 2} L ${to.x} ${to.y + to.h / 2}`
+            : (edge.from === edge.to
+              ? `M ${x1} ${y1} C ${x1 + 46} ${y1 + 26} ${x1 + 46} ${y1 - 26} ${x1 + 6} ${y1 - 6}`
+              : `M ${x1} ${y1} C ${x1} ${y1 + bend} ${x2} ${y2 - bend} ${x2} ${y2}`)
+          const projected = edge.projected === true
+          const dashed = kind === 'depends_on_aggregated'
+          const dotted = kind === 'sourced_from'
+          const weight = Number.isInteger(edge.weight) ? edge.weight : null
+          const path = el('path', {
             key: `e${index}`,
             d,
             fill: 'none',
-            stroke: TOKEN.border,
-            strokeWidth: 1.2,
-            markerEnd: 'url(#orchd-graph-arrow)',
-            'data-orchd-graph-edge': `${edge.from}>${edge.to}`
+            stroke: projected ? TOKEN.labelTertiary : TOKEN.border,
+            strokeWidth: dashed && weight !== null && weight > 1 ? 2 : 1.2,
+            strokeDasharray: dashed ? '6 4' : (dotted ? '1 4' : undefined),
+            strokeLinecap: dotted ? 'round' : undefined,
+            markerEnd: projected ? undefined : 'url(#orchd-graph-arrow)',
+            'data-orchd-graph-edge': `${edge.from}>${edge.to}`,
+            'data-orchd-graph-edge-kind': kind
           })
+          // 聚合边的 weight 是「几个下游伞靠它」的计数，必须可读（否则虚线只是一条线）
+          if (!dashed || weight === null || mode !== 'full') return path
+          return [
+            path,
+            el('text', {
+              key: `w${index}`,
+              x: (x1 + x2) / 2,
+              y: (y1 + y2) / 2,
+              fontSize: 10,
+              fill: TOKEN.labelTertiary,
+              textAnchor: 'middle',
+              'data-orchd-graph-edge-weight': String(weight)
+            }, `×${weight}`)
+          ]
         }),
         ...nodes.map((node) => {
           const position = layout.positions.get(node.id)
           if (position === undefined) return null
-          const color = node.missing === true ? STATE_TOKEN.broken : (STATUS_TOKEN[node.status] ?? TOKEN.labelTertiary)
-          const isFocus = node.id === focusId
-          const onChain = node.relation === 'upstream' || node.relation === 'downstream' || node.relation === 'both'
-          const label = graphNodeLabel(node)
-          const blocked = typeof node.blockedDownstream === 'number' && node.blockedDownstream > 0
-            ? ` · ${t('graphBlocked')} ${node.blockedDownstream}`
-            : ''
-          return React.createElement('g', {
-            key: `n-${node.id}`,
-            role: 'button',
-            tabIndex: 0,
-            'data-orchd-graph-node': node.id,
-            'data-orchd-graph-relation': node.relation ?? 'none',
-            'aria-label': `${node.id} ${label}`,
-            style: { cursor: 'pointer' },
-            onClick: () => onFocus(node.id),
-            onKeyDown: (event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                onFocus(node.id)
-              }
-            }
-          }, [
-            React.createElement('title', { key: 't' }, `${node.id} · ${label}${blocked}${node.missing === true ? t('graphMissing') : ''}`),
-            React.createElement('rect', {
-              key: 'r',
-              x: position.x,
-              y: position.y,
-              width: position.w,
-              height: position.h,
-              rx: 6,
-              ry: 6,
-              fill: isFocus || onChain ? TOKEN.hover : TOKEN.surface2,
-              stroke: color,
-              strokeWidth: isFocus ? 2 : 1,
-              strokeDasharray: node.missing === true ? '4 3' : undefined
-            }),
-            React.createElement('text', {
-              key: 'l1',
-              x: position.x + 8,
-              y: position.y + 17,
-              fontSize: 11.5,
-              fill: TOKEN.label
-            }, truncateLabel(label, 17)),
-            React.createElement('text', {
-              key: 'l2',
-              x: position.x + 8,
-              y: position.y + 31,
-              fontSize: 10.5,
-              fill: TOKEN.labelTertiary
-            }, truncateLabel(node.missing === true ? t('graphMissing') : `${node.id}${blocked}`, 19))
-          ])
+          return node.kind === 'umbrella'
+            ? el(GraphUmbrellaCard, { key: `u-${node.id}`, t, node, position, expandedUmbrella, onSelectUmbrella, labelMode: mode })
+            : (node.kind === 'file'
+              ? el(GraphFileCard, { key: `f-${node.id}`, t, node, position, labelMode: mode })
+              : el(GraphTaskCard, { key: `n-${node.id}`, t, node, position, focusId, activeLens, onOpenTask, onFocus, labelMode: mode }))
         })
       ])
+    }
 
-      return React.createElement('div', {
+    // 缩放控件（§9.2）；平移仍走 ScrollPane
+    function GraphZoomControls({ t, scale, onZoomOut, onZoomIn, onFit, onReset }) {
+      const btn = (key, label, onClick, text) => el('button', {
+        key, type: 'button', style: styles.chipButton, 'data-orchd-graph-zoom': key, 'aria-label': label, onClick
+      }, text)
+      return el('div', { style: styles.graphLensRow, role: 'group', 'aria-label': t('graphZoomGroup') }, [
+        btn('out', t('graphZoomOut'), onZoomOut, '−'),
+        el('span', { key: 'lv', style: styles.mono }, `${Math.round(scale * 100)}%`),
+        btn('in', t('graphZoomIn'), onZoomIn, '+'),
+        btn('fit', t('graphZoomFit'), onFit, t('graphZoomFit')),
+        btn('reset', t('graphZoomReset'), onReset, t('graphZoomReset'))
+      ])
+    }
+
+    /**
+     * 依赖图面板：只做「派生 + 组合」。
+     * - 布局/投影都在服务端或纯函数里算好，这里不重排、不重算（R20：经典视图与镜头视图共用同一组纯函数）；
+     * - 经典视图恒为 chain 并隐藏切换器（FR-14.9），渲染结构不变 = 无功能回退。
+     */
+    function DependencyGraph({ data, t, onOpenTask, onFocus, onBackToAll, includeTerminal, onToggleTerminal, classic, onToggleClassic, onSelectLens, umbrella, onSelectUmbrella }) {
+      const nodes = Array.isArray(data?.nodes) ? data.nodes : []
+      const counts = data?.counts ?? {}
+      const focusInfo = data?.focus ?? null
+      const focusId = typeof focusInfo?.id === 'string' ? focusInfo.id : null
+      // 经典视图恒为 chain（FR-14.9）；其余以服务端回显 lens 为准——投影由服务端算好，前端不重算
+      const classicMode = classic === true
+      const activeLens = classicMode ? 'chain' : (typeof data?.lens === 'string' ? data.lens : 'chain')
+      const lensOptions = graphLensOptions(data)
+      const umbrellaProjection = activeLens === 'umbrella' ? (data?.projection?.umbrella ?? null) : null
+      const waveProjection = activeLens === 'wave' ? (data?.projection?.wave ?? null) : null
+      const expandedUmbrella = typeof umbrellaProjection?.expanded === 'string' ? umbrellaProjection.expanded : null
+      const [scale, setScale] = React.useState(1)
+      const [viewportWidth, setViewportWidth] = React.useState(0)
+      const scrollRef = React.useRef(null)
+      // 视口宽 → 折行列数（§9.1）；卸载 disconnect
+      React.useEffect(() => {
+        const node = scrollRef.current
+        if (node === null) return undefined
+        const read = () => setViewportWidth(node.clientWidth)
+        read()
+        if (typeof ResizeObserver !== 'function') return undefined
+        const observer = new ResizeObserver(read)
+        observer.observe(node)
+        return () => observer.disconnect()
+      }, [])
+      const viewportW = viewportWidth > 0 ? viewportWidth : GRAPH_VIEWPORT_FALLBACK
+      const filesProjection = activeLens === 'files' ? (data?.projection?.files ?? null) : null
+      const layout = activeLens === 'wave'
+        ? layoutWaveGraph(data, { maxWidth: viewportW - 1 })
+        : (activeLens === 'files' ? layoutFilesGraph(data, { maxWidth: viewportW - 1 }) : layoutDependencyGraph(data, { maxWidth: viewportW - 1 }))
+      const labelMode = graphLabelMode(scale)
+      // §10.5：importance 图例补「显式优先于推导」；files 图例由 edgeKinds（只有 touches）驱动
+      const legendRows = activeLens === 'importance'
+        ? graphLegendRows(data, t).concat({ kind: 'importance-rank', count: null, projected: false, text: t('graphLegendImportance'), note: null, dash: 'solid' })
+        : (activeLens === 'umbrella' || activeLens === 'files' ? graphLegendRows(data, t) : [])
+      const anomalyRows = graphAnomalyRows(data, t)
+      const zoomTo = (next) => setScale(Math.min(GRAPH_ZOOM_MAX, Math.max(GRAPH_ZOOM_MIN, Math.round(next * 100) / 100)))
+      const fitScale = () => zoomTo(Math.min(1, (viewportW - 20) / Math.max(1, layout.width)))
+
+      const lensRow = classicMode || lensOptions.length <= 1 ? null : el(GraphLensSwitcher, {
+        key: 'lens', t, options: lensOptions, activeLens, onSelectLens
+      })
+      const toolbar = el(GraphToolbar, {
+        key: 'bar', t, counts, nodeCount: nodes.length, includeTerminal, onToggleTerminal, classicMode, onToggleClassic, focusId, onBackToAll
+      })
+      const zoomRow = el(GraphZoomControls, {
+        key: 'zoom', t, scale,
+        onZoomOut: () => zoomTo(scale / GRAPH_ZOOM_STEP),
+        onZoomIn: () => zoomTo(scale * GRAPH_ZOOM_STEP),
+        onFit: fitScale,
+        onReset: () => zoomTo(1)
+      })
+      const banners = graphBannerNodes({ t, counts, layout, waveProjection, umbrellaProjection, filesProjection, expandedUmbrella, anomalyRows, onFocus, onSelectUmbrella })
+      const critical = graphCriticalPathText(data?.criticalPath, t)
+      const criticalPathRow = critical.text === null ? null : el('div', {
+        key: 'critical-path', style: { ...styles.note, padding: '0 14px 8px' }, 'data-orchd-graph-critical-path': ''
+      }, critical.text)
+      const legend = el(GraphLegend, { key: 'legend', t, rows: legendRows })
+      const focusBar = el(GraphFocusBar, { key: 'focus', t, focusId, focusInfo, onOpenTask })
+      const emptyBlock = React.createElement(GraphEmptyState, { key: 'empty', t, counts })
+      return el('div', {
         key: 'graph',
         style: { display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 },
-        'data-orchd-graph': 'pane'
+        'data-orchd-graph': 'pane',
+        'data-orchd-graph-lens-active': activeLens,
+        'data-orchd-graph-zoom-level': String(Math.round(scale * 100)),
+        'data-orchd-graph-label-mode': labelMode
       }, [
+        lensRow,
         toolbar,
+        zoomRow,
+        criticalPathRow,
         // 横幅只在真有图可标注时才出现（空态提示里已写了「本图隐藏了 N 个终态任务」，不必重复）
         ...(nodes.length === 0 ? [] : banners),
+        legend,
         focusBar,
         nodes.length === 0
           ? emptyBlock
-          : React.createElement(ScrollPane, {
+          : el(ScrollPane, {
               key: 'scroll',
               label: t('graphScrollLabel'),
-              // 窄栏里图可能比可视区宽（全图时）——**两个轴都自绘**：
-              // 纵向走通用那套；横向必须自己画，否则 `scrollbar-width:none` 把原生条也藏掉，
-              // 纯滚轮的鼠标用户够不到右侧内容（探针实测横向溢出 460px、原生槽位 0px）。
+              // 两个轴都自绘：横向必须自己画，否则 `scrollbar-width:none` 连原生条也藏掉，纯滚轮用户够不到右侧。
+              scrollerRef: scrollRef,
               horizontal: true,
               scrollerStyle: styles.graphScroll,
-              contentStyle: { width: layout.width },
-              children: svg
+              contentStyle: { width: layout.width * scale },
+              children: el(GraphSvgLayer, { key: 'svg', t, data, layout, focusId, activeLens, expandedUmbrella, onOpenTask, onFocus, onSelectUmbrella, scale, labelMode })
             })
       ].filter(Boolean))
     }
@@ -2281,7 +2511,7 @@ window.__ModuleLoader__.load({
     /** 「在等谁」用不同语义色：等用户最需要注意力。 */
     function ideaOwnerToken(owner) {
       switch (owner) {
-        case 'user': return 'var(--dsw-alias-state-warn-primary, currentColor)'
+        case 'user': return WARN
         case 'agent': return 'var(--dsw-alias-state-business-primary, currentColor)'
         default: return TOKEN.labelTertiary
       }
@@ -2345,7 +2575,7 @@ window.__ModuleLoader__.load({
           ? React.createElement('div', {
               key: 'unsupported',
               'data-orchd-ideas-unsupported': String(data.unsupportedHint ?? 'true'),
-              style: { ...styles.note, padding: '0 14px 8px', color: 'var(--dsw-alias-state-warn-primary, currentColor)' }
+              style: { ...styles.note, padding: '0 14px 8px', color: WARN }
             }, t('ideasEngineUnsupported'))
           : null,
         React.createElement(StatusStripFilter, {
@@ -2454,7 +2684,7 @@ window.__ModuleLoader__.load({
             ? null
             : React.createElement('span', { key: 'conv', 'data-orchd-idea-converted': String(entry.convertedTasks.length) },
                 `${entry.convertedTasks.length} ${t('ideasConvertedTasks')}`),
-          entry.degraded ? React.createElement('span', { key: 'g', style: { color: 'var(--dsw-alias-state-warn-primary, currentColor)' } }, `⚠ ${t('ideasDegraded')}`) : null,
+          entry.degraded ? React.createElement('span', { key: 'g', style: { color: WARN } }, `⚠ ${t('ideasDegraded')}`) : null,
           entry.engineTitle === null || entry.engineTitle === undefined
             ? React.createElement('span', { key: 'only', style: { color: TOKEN.labelTertiary } }, t('ideasOnlyInMarkdown'))
             : null
@@ -2618,6 +2848,10 @@ window.__ModuleLoader__.load({
       // 闭包由**服务端**算（前端只画，FR-7.5）。
       const [graphFocus, setGraphFocus] = React.useState(null)
       const [graphIncludeTerminal, setGraphIncludeTerminal] = React.useState(false)
+      // FR-14 镜头：默认 chain（契约 §6.1）；镜头/展开伞都是请求参数，投影不缓存
+      const [graphLens, setGraphLens] = React.useState('chain')
+      const [graphUmbrella, setGraphUmbrella] = React.useState(null)
+      const [graphClassic, setGraphClassic] = React.useState(false)
       const [showDiagnostics, setShowDiagnostics] = React.useState(false)
       // mode 是**单选**筛选模式（'all' | 'active' | 具体状态），见 applyFilters（FR-5.2）
       const [filters, setFilters] = React.useState({ keyword: '', mode: 'all', modules: [], sortBy: 'default' })
@@ -2632,6 +2866,9 @@ window.__ModuleLoader__.load({
         setOpenIdea(null)
         // 聚焦是**任务 id**，跨会话没有意义（另一个项目里根本没有这个任务，服务端会回 400）
         setGraphFocus(null)
+        // 展开的伞同理（跨项目 `<kind>:<slug>` 会 400 unknown-umbrella）；镜头不跨会话记忆
+        setGraphUmbrella(null)
+        setGraphLens('chain')
       }, [sessionId])
 
       // 恢复该会话记忆的视图与筛选（无记忆 → 默认值）。FR-12.2：
@@ -2698,6 +2935,9 @@ window.__ModuleLoader__.load({
       }, [sessionId, tick, contextState, view])
 
       // 依赖图只在切到图视图时才拉（与 IDEAS 同理：默认视图不付成本）
+      // 经典视图恒为 chain（FR-14.9）；lens 只是请求参数：服务端看到的与界面高亮同源
+      const effectiveGraphLens = graphClassic === true ? 'chain' : graphLens
+
       React.useEffect(() => {
         if (sessionId === null || contextState !== 'ready' || view !== 'graph') return undefined
         const controller = new AbortController()
@@ -2705,7 +2945,11 @@ window.__ModuleLoader__.load({
         api('/orchd/api/graph', {
           session: sessionId,
           refresh: tick > 0,
-          focus: graphFocus,
+          lens: effectiveGraphLens,
+          // umbrella 只在伞镜头回传（其它镜头会 400）；再点/收起 = 清空
+          umbrella: effectiveGraphLens === 'umbrella' && graphUmbrella !== null ? graphUmbrella : undefined,
+          // 伞/文件镜头不支持 focus（服务端 400 focus-not-supported），这里再兜一层
+          focus: effectiveGraphLens === 'umbrella' || effectiveGraphLens === 'files' ? undefined : graphFocus,
           includeTerminal: graphIncludeTerminal ? '1' : undefined
         }, controller.signal)
           .then((body) => setGraph({ status: 'ok', data: body.data, error: null, meta: body.meta }))
@@ -2714,13 +2958,14 @@ window.__ModuleLoader__.load({
             setGraph((previous) => ({ status: 'error', data: previous.data, error, meta: error?.envelope?.meta }))
           })
         return () => controller.abort()
-      }, [sessionId, tick, contextState, view, graphFocus, graphIncludeTerminal])
+      }, [sessionId, tick, contextState, view, graphFocus, graphIncludeTerminal, effectiveGraphLens, graphUmbrella])
 
       const redetect = () => {
         setBoard({ status: 'idle', data: null, error: null, meta: null })
         setIdeas({ status: 'idle', data: null, error: null, meta: null })
         setGraph({ status: 'idle', data: null, error: null, meta: null })
         setGraphFocus(null)
+        setGraphUmbrella(null)
         setTick((value) => value + 1)
       }
       const data = context.data
@@ -2828,7 +3073,7 @@ window.__ModuleLoader__.load({
                     fontSize: 11,
                     border: 'none',
                     padding: '0 5px',
-                    background: needsUser > 0 ? 'var(--dsw-alias-state-warn-primary, currentColor)' : TOKEN.hover,
+                    background: needsUser > 0 ? WARN : TOKEN.hover,
                     color: needsUser > 0 ? TOKEN.surface : 'inherit'
                   }
                 }, String(needsUser))
@@ -2859,7 +3104,7 @@ window.__ModuleLoader__.load({
               ? React.createElement('div', {
                   key: 'gstale',
                   'data-orchd-graph-stale': 'true',
-                  style: { ...styles.note, color: 'var(--dsw-alias-state-warn-primary, currentColor)' }
+                  style: { ...styles.note, color: WARN }
                 }, `${t('staleBanner')}${isTimeoutError(graph.error) ? ` ${t('timeoutHint')}` : ''}`)
               : null,
             React.createElement(DependencyGraph, {
@@ -2871,7 +3116,14 @@ window.__ModuleLoader__.load({
               onFocus: (id) => setGraphFocus((previous) => (previous === id ? null : id)),
               onBackToAll: () => setGraphFocus(null),
               includeTerminal: graphIncludeTerminal,
-              onToggleTerminal: setGraphIncludeTerminal
+              onToggleTerminal: setGraphIncludeTerminal,
+              // FR-14.9：经典视图 = 强制 chain 请求 + 现行渲染/布局原样（切换器隐藏）
+              classic: graphClassic,
+              onToggleClassic: (on) => { setGraphClassic(on); if (on || graphLens === 'umbrella' || graphLens === 'files') setGraphFocus(null) },
+              // FR-14.6：切镜头 = 一次请求；离开伞镜头清空展开；files 不支持 focus
+              onSelectLens: (id) => { setGraphLens(id); if (id !== 'umbrella') setGraphUmbrella(null); else setGraphFocus(null); if (id === 'files') setGraphFocus(null) },
+              umbrella: graphUmbrella,
+              onSelectUmbrella: (id) => setGraphUmbrella(typeof id === 'string' && id !== '' ? id : null)
             })
           ].filter(Boolean))
         }
@@ -2935,7 +3187,7 @@ window.__ModuleLoader__.load({
             ? React.createElement('div', {
                 key: 'stale',
                 'data-orchd-stale': 'true',
-                style: { ...styles.note, color: 'var(--dsw-alias-state-warn-primary, currentColor)' }
+                style: { ...styles.note, color: WARN }
               }, `${t('staleBanner')}${isTimeoutError(board.error) ? ` ${t('timeoutHint')}` : ''}`)
             : null,
           // 没有任何快照可用时才整块报错（避免白屏）
@@ -3234,7 +3486,7 @@ window.__ModuleLoader__.load({
      * 必须有单测兜底。测试用 `test/client.test.mjs` 的 `vm` + 假 `window.__ModuleLoader__`
      * 加载本文件再取这个对象断言。
      */
-    exports.__testables = { applyFilters, sortRows, countByStatus, TASK_STATUS_I18N, ALL_STATUSES, styles, IDEA_STATUSES_UI, IDEA_STATUS_I18N, ideaCommandsFor, ideaDisplayStatus, ideaStatusText, computeThumb, scrollTopForThumbTop, SCROLLBAR_WIDTH, SCROLLBAR_MIN_THUMB, ROW_HEIGHT, IDEA_ROW_HEIGHT, interactionCss, INTERACTION_CSS_TAG, layoutDependencyGraph, graphAnomalyRows, graphNodeLabel, truncateLabel, graphTextUnits, GRAPH_NODE_W, GRAPH_NODE_H, GRAPH_GAP_X, GRAPH_GAP_Y }
+    exports.__testables = { applyFilters, sortRows, countByStatus, TASK_STATUS_I18N, ALL_STATUSES, styles, IDEA_STATUSES_UI, IDEA_STATUS_I18N, ideaCommandsFor, ideaDisplayStatus, ideaStatusText, computeThumb, scrollTopForThumbTop, SCROLLBAR_WIDTH, SCROLLBAR_MIN_THUMB, ROW_HEIGHT, IDEA_ROW_HEIGHT, interactionCss, INTERACTION_CSS_TAG, layoutDependencyGraph, graphAnomalyRows, graphNodeLabel, truncateLabel, graphTextUnits, GRAPH_NODE_W, GRAPH_NODE_H, GRAPH_GAP_X, GRAPH_GAP_Y, graphLensOptions, layoutWaveGraph, umbrellaNodeLabel, graphLegendRows, GRAPH_LENS_ORDER, GRAPH_WAVE_LABEL_W, graphLabelMode, GRAPH_SEGMENT_GAP, GRAPH_ZOOM_MIN, GRAPH_ZOOM_MAX, GRAPH_VIEWPORT_FALLBACK, GRAPH_PAD, layoutFilesGraph, graphCriticalPathText }
     return module.exports
   }
 })
