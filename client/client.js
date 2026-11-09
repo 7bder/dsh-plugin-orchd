@@ -661,6 +661,15 @@ window.__ModuleLoader__.load({
       rowMeta: { display: 'flex', gap: 8, alignItems: 'center', fontSize: 11.5, color: TOKEN.labelTertiary, whiteSpace: 'nowrap', overflow: 'hidden' },
       statusTag: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, whiteSpace: 'nowrap' },
       note: { padding: '0 14px 8px', fontSize: 12, color: TOKEN.labelTertiary, flex: '0 0 auto' },
+      /**
+       * 行内提示（跟在按钮右侧的说明文字）：必须能**收缩 + 换行**。
+       *
+       * 不能直接复用 note：note 是块级提示，带 flex: 0 0 auto；它作为 controlRow 的
+       * flex item 会拒绝收缩，文本按 max-content 撑出去——390px 侧栏里整句被右边界裁掉
+       * （用户实测：接入卡「让 agent 帮我接入」下方那行说明）。这里显式放开收缩，
+       * 允许在任意位置断行，宽度随面板大小自适应。
+       */
+      hint: { flex: '1 1 auto', minWidth: 0, padding: 0, fontSize: 12, color: TOKEN.labelTertiary, overflowWrap: 'anywhere' },
       // 右侧内边距避开自绘滚动条（轨道 right:2 + width:14 ⇒ 占最右 16px），否则文字被滑块压住
       detailBody: { padding: `0 ${SCROLLBAR_WIDTH + 10}px 14px 14px`, boxSizing: 'border-box' },
       /**
@@ -1519,7 +1528,7 @@ window.__ModuleLoader__.load({
             return load()
           }
         }, state === 'confirming' ? t('installCancel') : t('installAgent')),
-        React.createElement('span', { key: 'n', style: { ...styles.note, padding: 0 } },
+        React.createElement('span', { key: 'n', style: styles.hint },
           unsupported ? t('installAgentUnavailable') : t('installAgentHint'))
       ])
 
@@ -3061,7 +3070,7 @@ window.__ModuleLoader__.load({
                   ].filter(Boolean)),
                   React.createElement('div', { key: 'export', style: { ...styles.controlRow, marginTop: 8 } }, [
                     React.createElement(CopyButton, { key: 'c', text: diagnosticsSnapshot, t, label: t('exportDiag') }),
-                    React.createElement('span', { key: 'h', style: { ...styles.note, padding: 0 } }, t('exportDiagHint'))
+                    React.createElement('span', { key: 'h', style: styles.hint }, t('exportDiagHint'))
                   ]),
                   data.detail === undefined ? null : React.createElement('pre', { key: 'detail', style: styles.pre }, JSON.stringify(data.detail, null, 2))
                 ])
