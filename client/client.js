@@ -1,16 +1,6 @@
 /**
  * dsh-plugin-orchd · 浏览器半侧（手写 bundle，零构建链，NFR-4.1）。
- *
- * 承载形态：**右侧栏面板**（决策 D3，2026-10-15 由「左侧栏整页」变更；原因是整页会替换中栏，
- * 打开面板就看不到会话）。注册形状逐条对照：
- *   - 类型 + 正文 + 标题：dsh-client-ui-plan/lib/client.js:630-699
- *   - 正文 inject 拿 sessionId（session 作用域）：dsh-client-ui-sidebar-terminal/lib/client.js:475-483
- *   - header 工具席位（**list**，别用 single 的 corner）：dsh-client-ui-jobs/lib/client.js:610-621
- *
- * P1 范围（docs/05 第 4 节）：项目头 + 状态条 + 任务列表（筛选/搜索/排序）+ 详情 + 折叠诊断。
- * 明确的**不做**（留给 P2/P2b）：历史时间线、依赖图、i18n 完整键集、A 路径注入。
- *
- * 只 require 平台 seed 模块表里的词；不引入任何第三方依赖。
+ * 承载形态：右侧栏面板（决策 D3；整页会替换中栏）；注册形状对照 docs/04，只 require 平台 seed 模块。
  */
 
 window.__ModuleLoader__.load({
@@ -36,11 +26,7 @@ window.__ModuleLoader__.load({
     const OVERSCAN = 6
     /** 自绘滚动条的宽度（左右各 2px 内缩 ⇒ 可见滑块 10px）。原生默认只有 5px。 */
     const SCROLLBAR_WIDTH = 14
-    /**
-     * 自绘滚动条滑块的**最小长度**——原生做不到这一点，这正是自绘的主要理由：
-     * 805 任务 × 52px = 41,860px 内容 / 约 520px 可视 ⇒ 原生滑块只有约 6px 长（1.2%），
-     * 小到几乎看不见也抓不住。这里给一个固定的可抓取下限。
-     */
+    /** 自绘滑块的最小长度（原生做不到）：41,860px 内容 / ~520px 可视时原生滑块仅约 6px，抓不住。 */
     const SCROLLBAR_MIN_THUMB = 72
 
         /**
@@ -65,6 +51,8 @@ window.__ModuleLoader__.load({
       noSessionHint: ['先在左侧选择一个项目会话，再打开这个面板。', 'Select a project session on the left, then open this panel.'],
       project: ['项目', 'Project'],
       snapshotAt: ['更新于', 'Updated at'],
+      autoRefreshOn: ['自动 · 5s', 'Auto · 5s'],
+      autoRefreshPaused: ['自动已暂停', 'Auto paused'],
       redetect: ['重新检测', 'Re-detect'],
       detectedBy: ['项目根来源', 'Root source'],
       python: ['Python', 'Python'],
@@ -83,22 +71,22 @@ window.__ModuleLoader__.load({
       stateUninitialized: ['已安装，未初始化', 'Installed, uninitialized'],
       stateReady: ['就绪', 'Ready'],
       stateBroken: ['异常', 'Broken'],
-      installTitle: ['这个项目还没有接入 orchd', 'This project has not been set up with orchd yet'],
-      installHint: ['复制下面的命令，在项目根目录执行即可完成接入；也可以让 agent 帮你接入。', 'Copy the commands below and run them in the project root, or ask an agent to do it.'],
+      installTitle: ['这个项目还没有接入 orchd', 'This project is not set up with orchd yet'],
+      installHint: ['复制下面的命令，在项目根目录执行；也可以让 agent 帮你接入。', 'Run the commands below in the project root, or ask an agent to do it.'],
       installAgent: ['让 agent 帮我接入', 'Ask an agent to set it up'],
       installAgentHint: ['把接入指令交给当前会话的 agent，由它按 orchd 官方流程执行（插件自己不做安装）', 'Hand the setup instruction to this session\'s agent; it runs orchd\'s official flow (the plugin never installs anything)'],
-      installAgentUnavailable: ['A 路径不可用（命令服务未就绪），请用上面的命令手动接入', 'The A path is unavailable (command service not ready) — use the commands above'],
+      installAgentUnavailable: ['A 路径不可用（命令服务未就绪），请手动接入', 'The A path is unavailable (command service not ready) — set it up manually'],
       installDegradeReason: ['原因：', 'Reason: '],
-      installConfirmLead: ['将要注入这条消息（确认前不会发送）：', 'This message will be injected (nothing is sent before you confirm):'],
+      installConfirmLead: ['将要注入这条消息（确认前不会发送）：', 'This message will be injected (not sent before you confirm):'],
       installConfirm: ['确认注入', 'Confirm injection'],
       installCancel: ['收起', 'Collapse'],
       installInjecting: ['注入中…', 'Injecting…'],
-      installInjected: ['已注入：请在上面的会话里查看 agent 的接入过程。', 'Injected — watch the agent carry out the setup in the conversation.'],
+      installInjected: ['已注入：请在上面的会话里查看接入过程。', 'Injected — watch the setup in the conversation.'],
       installFailed: ['注入失败：', 'Injection failed: '],
       initTitle: ['已安装，但还没有任务定义', 'Installed, but no task definitions yet'],
-      initHint: ['引擎会把这个项目判为初始化阶段。任务定义文件是：', 'The engine treats this project as first-time initialization. Definition file:'],
+      initHint: ['引擎会把这个项目判为初始化阶段。定义文件：', 'The engine treats this project as first-time init. Definition file:'],
       brokenTitle: ['orchd 状态异常', 'orchd state is broken'],
-      brokenHint: ['面板不会把它降级成「未初始化」或空看板，下面是失败环节与原始诊断。', 'The panel never downgrades this to "uninitialized" or an empty board. Failed stage and raw diagnostics:'],
+      brokenHint: ['面板不会把它降级成「未初始化」或空看板；下面是失败环节与原始诊断。', 'Never downgraded to "uninitialized" or an empty board. Failed stage and raw diagnostics:'],
       //// 状态条（FR-4）
       sTotal: ['总数', 'Total'],
       sPending: ['待办', 'Pending'],
@@ -171,6 +159,28 @@ window.__ModuleLoader__.load({
       dReviewLoad: ['拉取审查意见', 'Load review history'],
       dReviewLoading: ['加载中…', 'Loading…'],
       dScrollLabel: ['任务详情滚动条', 'Task detail scrollbar'],
+      // ── v3 任务卡字段（§4）──
+      dKind: ['类型', 'Kind'],
+      dDesignTier: ['分级·声明', 'Tier declared'],
+      dDesignTierComputed: ['分级·推导', 'Tier computed'],
+      dDesignTierEffective: ['分级·生效', 'Tier effective'],
+      dDesignException: ['分级例外', 'Tier exception'],
+      dRiskFlags: ['风险标记', 'Risks'],
+      dSurfaceRefresh: ['表面刷新', 'Surfaces'],
+      dDesignNote: ['设计说明', 'Note'],
+      dDesignRefs: ['设计引用', 'Refs'],
+      dPhase: ['阶段', 'Phase'],
+      dClaimedAt: ['认领', 'Claimed'],
+      dReviewClaimedAt: ['审查认领', 'Rev. claimed'],
+      dUpdatedAt: ['更新', 'Updated'],
+      dLatestReview: ['最近审查', 'Last review'],
+      dArchivedBadge: ['定义已归档', 'Definition archived'],
+      dDesignBadge: ['设计', 'Design'],
+      dRiskBadge: ['风险', 'Risk'],
+      archiveWarning: ['归档不可读（{reason}），定义层仅剩活跃 {n} 条', 'Archive unreadable ({reason}); only {n} active definitions remain'],
+      dDesignGroup: ['设计绑定', 'Design binding'],
+      dTimeGroup: ['时间', 'Time'],
+      dResume: ['续跑', 'Resume'],
       ideasDetailScrollLabel: ['想法详情滚动条', 'Idea detail scrollbar'],
       //// ── 审查事件时间线（FR-8，P2 收窄）──
       reviewTitle: ['审查时间线', 'Review timeline'],
@@ -185,10 +195,10 @@ window.__ModuleLoader__.load({
       mergeWarning: ['合并告警', 'Merge warning'],
       reviveMarker: ['复活标记', 'Revive marker'],
       //// ── 降级语义（FR-9.3 / 9.5）──
-      staleBanner: ['引擎当前不可用，下面显示的是最后一次成功的快照（数据可能已过期）。', 'The engine is currently unavailable — showing the last successful snapshot (data may be stale).'],
+      staleBanner: ['引擎当前不可用，下面是最后一次成功的快照（可能已过期）。', 'Engine unavailable — showing the last successful snapshot (may be stale).'],
       timeoutHint: ['引擎调用超时', 'Engine call timed out'],
       exportDiag: ['复制诊断快照', 'Copy diagnostics snapshot'],
-      exportDiagHint: ['把检测结论、各阶段耗时与原始错误复制到剪贴板（只复制，不写文件）', 'Copy detection conclusion, stage timings and raw errors to the clipboard (copy only, never writes files)'],
+      exportDiagHint: ['把检测结论、各阶段耗时与原始错误复制到剪贴板（只复制，不写文件）', 'Copy detection conclusion, stage timings and raw errors to the clipboard (copy only, no file writes)'],
       //// 空态语义（FR-9.4）
       localError: ['详情加载失败（列表不受影响）', 'Task detail failed to load (the list is unaffected)'],
       //// ── FR-13 想法看板 ──
@@ -197,9 +207,9 @@ window.__ModuleLoader__.load({
       viewIdeas: ['想法', 'Ideas'],
       ideasArchived: ['归档', 'Archived'],
       ideasArchivedUnit: ['条', ''],
-      ideasArchivedHint: ['归档只计数，不加载全文；已立任务 / 已覆盖 / 人工 close 的条目都到这里了', 'Archived entries are counted only; entries that became tasks, were covered, or were closed live here'],
-      ideasArchivedHistorical: ['归档保留原文，因此这里的 status 是历史值（可能仍写着 pending）', 'The archive keeps the original text, so these statuses are historical'],
-      ideasEngineUnsupported: ['本项目的 orchd 引擎没有 ideas 子命令（旧版本）：下面这份列表与状态是直接读 IDEAS.md 得到的，没有引擎清单可交叉核对。升级引擎后会自动启用交叉核对。', "This project's orchd engine has no ideas subcommand (older build): the list and statuses below are read straight from IDEAS.md, with no engine ledger to cross-check. Cross-checking turns on automatically after an engine upgrade."],
+      ideasArchivedHint: ['归档只计数，不加载全文；已立任务 / 已覆盖 / 人工 close 的条目都在这里', 'Archived entries are counted only; tasked, covered or manually closed entries live here'],
+      ideasArchivedHistorical: ['归档保留原文，这里的 status 是历史值（可能仍写着 pending）', 'The archive keeps original text, so these statuses are historical'],
+      ideasEngineUnsupported: ['本项目的 orchd 引擎没有 ideas 子命令（旧版本）：下面的列表与状态直接读自 IDEAS.md，无引擎清单可交叉核对。升级后自动启用。', 'This engine has no ideas subcommand (older build): the list below is read straight from IDEAS.md with no ledger to cross-check. Enabled after an upgrade.'],
       ideasBadgeHint: ['在等你裁决的想法数（论证中 + 待补充）', 'Ideas waiting on you (studying + needs info)'],
       ideasEmpty: ['这个项目的 IDEAS 里还没有条目', 'This project has no IDEAS entries yet'],
       ideasEmptyFiltered: ['该状态当前没有想法：', 'No ideas with this status: '],
@@ -220,10 +230,10 @@ window.__ModuleLoader__.load({
       ideasExtra: ['未知字段', 'Unrecognised fields'],
       ideasDetailPath: ['详档', 'Detail doc'],
       ideasCommands: ['你可以执行的命令（id 已填好）', 'Commands you can run (id already filled in)'],
-      ideasCommandsHint: ['本面板只读：不提供 propose / confirm / close 按钮，只帮你复制命令。这些命令按当前状态给出；在途任务引用期间引擎会拒绝搬走（source_live_reference）。', 'This panel is read-only: no propose / confirm / close buttons — it only copies commands. They match the current status; while in-flight tasks reference the entry the engine refuses to move it (source_live_reference).'],
-      ideasCommandLegend: ['append = 往这条想法追加一条带时间戳的追记（不动原正文、不改状态，就是「追加记录」里那几行）；confirm / close = 你对这条想法的裁决（仅用户可执行；close 一律归档并留下裁决理由）。括号里的 <…> 是占位符，换成你自己要写的字。', 'append = add one timestamped note to this idea (it never touches the original body or status — these are the lines shown under "Appended notes"); confirm / close = your decision on this idea (user-only; close always archives the entry with your reason). The <…> parts are placeholders — replace them with your own text.'],
+      ideasCommandsHint: ['本面板只读：只帮你复制命令，不给 propose / confirm / close 按钮。在途任务引用期间引擎会拒绝搬走（source_live_reference）。', 'Read-only: this panel only copies commands — no propose / confirm / close buttons. While in-flight tasks reference the entry the engine refuses to move it (source_live_reference).'],
+      ideasCommandLegend: ['append = 往这条想法追加一条带时间戳的追记（不动原正文与状态）；confirm / close = 你的裁决（仅用户可执行，close 归档并留理由）。<…> 是占位符。', 'append = add one timestamped note (never touches body or status); confirm / close = your decision (user-only; close archives with your reason). <…> are placeholders.'],
       ideasPropose: ['新建想法（引擎侧的正式通道）', 'New idea (the engine-side channel)'],
-      ideasProposeHint: ['新建时还没有 id，所以标题里要自己声明一个（形如「标题（id: my-idea）」）。', 'A new idea has no id yet, so declare one in the title (e.g. "Title (id: my-idea)").'],
+      ideasProposeHint: ['新建时还没有 id，标题里自己声明一个（形如「标题（id: my-idea）」）。', 'A new idea has no id yet — declare one in the title (e.g. "Title (id: my-idea)").'],
       iStudy: ['论证中', 'Studying'],
       iQuestioning: ['待补充', 'Needs info'],
       iPending: ['待拆解', 'Awaiting breakdown'],
@@ -232,13 +242,13 @@ window.__ModuleLoader__.load({
       //// ── FR-7 依赖图（P2b）──
       graphCounts: ['节点 {n} · 边 {e}', '{n} nodes · {e} edges'],
       graphIncludeTerminal: ['含终态任务', 'Include finished tasks'],
-      graphIncludeTerminalHint: ['把已完成 / 已取消的任务也画进来（默认只画活跃任务与它们的直接邻居）', 'Also draw completed / cancelled tasks (by default only active tasks and their direct neighbours are drawn)'],
+      graphIncludeTerminalHint: ['把已完成 / 已取消的任务也画进来（默认只画活跃任务及其直接邻居）', 'Also draw finished tasks (default: active tasks and their direct neighbours)'],
       graphBackToAll: ['返回全图', 'Back to full graph'],
       graphEmptyActive: ['当前没有活跃任务', 'No active tasks right now'],
-      graphEmptyActiveHint: ['把「含终态任务」打开可以看完整依赖图（本图隐藏了 {n} 个终态任务）。', 'Turn on "Include finished tasks" to see the whole dependency graph ({n} finished tasks hidden here).'],
+      graphEmptyActiveHint: ['打开「含终态任务」可看完整依赖图（本图隐藏了 {n} 个终态任务）。', 'Turn on "Include finished tasks" for the whole graph ({n} finished tasks hidden here).'],
       graphHiddenTerminal: ['已隐藏 {n} 个终态任务', '{n} finished tasks hidden'],
       graphTruncated: ['节点太多，只画了前 {n} 个', 'Too many nodes — only the first {n} are drawn'],
-      graphAnomalyTitle: ['依赖关系异常（引擎不阻止，这里如实标注）', 'Dependency anomalies (the engine does not block these; they are labelled here)'],
+      graphAnomalyTitle: ['依赖关系异常（引擎不阻止，这里如实标注）', 'Dependency anomalies (not blocked by the engine; labelled here)'],
       graphCycle: ['循环依赖：', 'Dependency cycle: '],
       graphDangling: ['依赖了不存在的任务：', 'Depends on a missing task: '],
       graphSelf: ['任务依赖了自己：', 'Task depends on itself: '],
@@ -250,7 +260,7 @@ window.__ModuleLoader__.load({
       graphFocusUpstream: ['上游', 'upstream'],
       graphFocusDownstream: ['下游', 'downstream'],
       graphOpenTask: ['打开详情', 'Open detail'],
-      graphHint: ['点一个节点看它的上下游闭包；点「返回全图」回到活跃子图', 'Click a node to see its upstream/downstream closure; "Back to full graph" returns to the active subgraph'],
+      graphHint: ['点节点看上下游闭包；「返回全图」回到活跃子图', 'Click a node for its upstream/downstream closure; "Back to full graph" returns to the active subgraph'],
       graphScrollLabel: ['依赖图滚动条', 'Dependency graph scrollbar'],
       graphUnavailable: ['依赖图数据不可用', 'Dependency graph data unavailable'],
       graphLensLabel: ['图谱镜头', 'Graph lens'],
@@ -291,16 +301,8 @@ window.__ModuleLoader__.load({
     const pickLocale = (index) => Object.fromEntries(Object.keys(I18N).map((key) => [key, I18N[key][index]]))
     const zh = pickLocale(0)
     const en = pickLocale(1)
-// ── 会话身份（FR-1.1）────────────────────────────────────────────────
-    //
-    // 本插件全部注册都落在 **session 作用域**：sidebar.right.pane.tab（keyed/session）、
-    // .title、conversation.session.header.utilities（list/session）。
-    // 框架只对 session / session-maybe 作用域的条目把 binding.key（= sessionId）传给
-    // inject（dsh-client-ui-renderer/lib/client.js:415-421），所以正文里
-    // inject: (sessionId) => ({ sessionId }) 直接可用。
-    //
-    // 对照：main 是 **root 作用域**，它的 inject 拿不到 sessionId —— 早前用左侧栏整页时
-    // 踩过这个坑（那时才需要 ctx.uiSession.current）。见 docs/04 第 6.2 节。
+    // ── 会话身份（FR-1.1）：全部注册都在 session 作用域，框架把 binding.key（= sessionId）传给 inject；
+    // main 是 root 作用域拿不到 sessionId（旧版左侧栏整页踩过，见 docs/04 §6.2）。──
 
     // ── 数据层 ────────────────────────────────────────────────────────────
     /** 同源 fetch，只传 sessionId（NFR-2.1：前端不传任何路径）。 */
@@ -308,7 +310,8 @@ window.__ModuleLoader__.load({
       const search = new URLSearchParams({ session: params.session })
       for (const [key, value] of Object.entries(params)) {
         if (key === 'session' || value === undefined || value === null) continue
-        search.set(key, String(value))
+        // 布尔按宿主的 `=1` 口径编码（路由侧判 `=== '1'`，写成 "true" 会被忽略）。
+        search.set(key, value === true ? '1' : value === false ? '0' : String(value))
       }
       const response = await fetch(`${path}?${search.toString()}`, { signal, headers: { accept: 'application/json' } })
       let body
@@ -323,6 +326,16 @@ window.__ModuleLoader__.load({
         throw error
       }
       return body
+    }
+
+    // ── 自动刷新（契约 §12.2）──
+    /** 轮询间隔（ms）：只探测 revision，变化才触发静默重取。 */
+    const REVISION_POLL_MS = 5000
+
+    /** revision 指纹：缺字段稳定返回 ''（首次探测作 baseline，不额外重取）。 */
+    function revisionKeyOf(data) {
+      const revision = data?.revision
+      return typeof revision === 'string' && revision !== '' ? revision : ''
     }
 
     // ── 主题与排版 ───────────────────────────────────────────────────────
@@ -380,11 +393,7 @@ window.__ModuleLoader__.load({
       stripEntryOn: { border: `2px solid ${TOKEN.label}`, padding: '0 7px', background: TOKEN.hover, fontWeight: 600 },
       // 0 值弱化但仍可点（FR-5.9）——用透明度而不是 disabled
       stripEntryZero: { opacity: 0.55 },
-      // ── 视图切换：与状态条**拉开层级**（只用字号与颜色，不引入第二种控件形态）──
-      //
-      // 视图切换回答「看什么」（更高一层），状态条回答「筛什么」（更细一层）。
-      // 所以：字号 13 vs 11.5、未选中走次级色（比状态条的中性色更退后）、
-      // 选中用主色 + 600 字重 + 描边。宽度/内边距也相应加大，让它看起来更「重」。
+      // 视图切换比状态条高一层：13 vs 11.5 字号、选中主色 + 600 字重 + 描边。
       viewSwitchRow: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', padding: '0 14px 8px', flex: '0 0 auto' },
       viewEntry: { font: 'inherit', fontSize: 13, lineHeight: 1.5, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 12px', borderRadius: 999, border: `1px solid transparent`, background: 'transparent', color: TOKEN.labelSecondary, cursor: 'pointer', whiteSpace: 'nowrap' },
       viewEntryActive: { border: `1px solid ${TOKEN.label}`, background: TOKEN.hover, color: TOKEN.label, fontWeight: 600 },
@@ -407,27 +416,15 @@ window.__ModuleLoader__.load({
       card: { margin: '12px 14px', padding: '12px 14px', borderRadius: TOKEN.radius, border: `1px solid ${TOKEN.border}`, background: TOKEN.surface, flex: '0 0 auto' },
       cardTitle: { fontSize: 14, fontWeight: 600, margin: '0 0 6px' },
       badge: { display: 'inline-block', padding: '0 7px', borderRadius: 999, fontSize: 11.5, border: '1px solid currentColor' },
+      // 归档横幅（§4）：文案自带原因与条数
+      archiveBanner: { margin: '0 14px 8px', padding: '6px 10px', borderRadius: TOKEN.radius, border: `1px solid ${TOKEN.border}`, borderLeft: `3px solid ${WARN}`, background: TOKEN.surface2, color: TOKEN.labelSecondary, fontSize: 12, flex: '0 0 auto' },
       grid: { display: 'grid', gridTemplateColumns: 'max-content minmax(0, 1fr)', gap: '3px 10px', fontSize: 12.5 },
       key: { color: TOKEN.labelTertiary, whiteSpace: 'nowrap' },
       mono: { fontFamily: TOKEN.mono, fontSize: 12, wordBreak: 'break-word', color: TOKEN.labelSecondary },
       pre: { margin: '6px 0 0', padding: '8px 10px', borderRadius: TOKEN.radiusSm, background: TOKEN.surface3, overflow: 'auto', fontFamily: TOKEN.mono, fontSize: 12, whiteSpace: 'pre-wrap', color: TOKEN.labelSecondary, maxHeight: 180 },
-      /**
-       * 可复制命令专用：必须**自己换行**、不能靠横向滚动条。
-       * 面板只有约 390px 宽，而命令约 90–100 字符；`pre-wrap` 只在空格处断，
-       * 遇到超长 token（长 id 等）就会触发 `overflow: auto` 的横向滚动条——
-       * 而平台的滚动条是 5px 半透明（当初「看不见的滚动条」那个坑）。
-       * 故这里显式 `overflowWrap: anywhere`，任何长度都能断。
-       */
+      // 可复制命令：自换行 + overflowWrap:anywhere，超长 token 不出横向滚动条（面板约 390px）。
       cmdPre: { margin: '4px 0 0', padding: '8px 10px', borderRadius: TOKEN.radiusSm, background: TOKEN.surface3, overflow: 'auto', fontFamily: TOKEN.mono, fontSize: 12, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', color: TOKEN.labelSecondary, maxHeight: 180 },
-      // ── 滚动区与**自绘滚动条** ─────────────────────────────────────────
-      //
-      // 为什么不直接用原生滚动条（两次踩坑的结论）：
-      //  ① 平台全局注入 `::-webkit-scrollbar{width:var(--dsh-scrollbar-width)}` 且
-      //     `body{--dsh-scrollbar-width:5px; --dsh-scrollbar-thumb:var(--dsw-alias-scrollbar-bg-l1)}`
-      //     ——5px 宽 + 最弱色阶（白 10%），在深色侧栏上等同「没有滚动条」；
-      //  ② 就算重绑变量调宽到 9px，**滑块长度仍是内容比例**：虚拟列表内容 805×52=41,860px、
-      //     可视区 ~520px，滑块只有约 6px 长（1.2%）。Chromium 没有「滑块最小长度」属性。
-      // 所以要同时把宽度和长度做大，只能自绘：宽度固定、长度取 max(比例, 最小可抓取长度)。
+      // 自绘滚动条：原生条仅 5px 且无最小滑块长度，长列表等于没有条（长度取 max(比例, 最小可抓取)）。
       listHost: { position: 'relative', flex: '1 1 auto', minHeight: 0, display: 'flex' },
       scroll: {
         flex: '1 1 auto',
@@ -496,26 +493,11 @@ window.__ModuleLoader__.load({
       rowMeta: { display: 'flex', gap: 8, alignItems: 'center', fontSize: 11.5, color: TOKEN.labelTertiary, whiteSpace: 'nowrap', overflow: 'hidden' },
       statusTag: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, whiteSpace: 'nowrap' },
       note: { padding: '0 14px 8px', fontSize: 12, color: TOKEN.labelTertiary, flex: '0 0 auto' },
-      /**
-       * 行内提示（跟在按钮右侧的说明文字）：必须能**收缩 + 换行**。
-       *
-       * 不能直接复用 note：note 是块级提示，带 flex: 0 0 auto；它作为 controlRow 的
-       * flex item 会拒绝收缩，文本按 max-content 撑出去——390px 侧栏里整句被右边界裁掉
-       * （用户实测：接入卡「让 agent 帮我接入」下方那行说明）。这里显式放开收缩，
-       * 允许在任意位置断行，宽度随面板大小自适应。
-       */
+      // 行内提示必须可收缩换行（note 的 flex:0 0 auto 会被 390px 侧栏裁掉）。
       hint: { flex: '1 1 auto', minWidth: 0, padding: 0, fontSize: 12, color: TOKEN.labelTertiary, overflowWrap: 'anywhere' },
       // 右侧内边距避开自绘滚动条（轨道 right:2 + width:14 ⇒ 占最右 16px），否则文字被滑块压住
       detailBody: { padding: `0 ${SCROLLBAR_WIDTH + 10}px 14px 14px`, boxSizing: 'border-box' },
-      /**
-       * 详情页骨架：**固定条 + 只滚正文**。
-       *
-       * 之前整个详情（含「返回」与「拉取审查意见」按钮）都塞在滚动容器里，内容一长
-       * 按钮就跟着滚出视野（用户实测反馈：「反馈列表按钮不要随内容滚动」）。
-       * 现在外层是列向 flex，工具条 `flexShrink: 0` 不参与滚动，只有正文区滚。
-       * 工具条是普通 flex 兄弟节点（不是 sticky 浮层），所以正文永远不会从它下面穿过，
-       * 不需要额外的分隔线。
-       */
+      // 详情页骨架：列向 flex，固定条不滚、只有正文滚（按钮不随内容滚出视野）。
       detailPage: { flex: '1 1 auto', minHeight: 0, width: '100%', display: 'flex', flexDirection: 'column' },
       detailBar: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px 6px', flexShrink: 0 },
       // 与 `scroll` 同源，但**不设 height:100%**——否则它会按父容器整高算，把固定条挤出去
@@ -551,16 +533,9 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 自绘滚动容器：**任务列表 + 两个详情页 + 依赖图共用**。
-     *
-     * ⚠ 这里**故意不展开复用**任务列表那套滚动样式（client 套件有断言守着「只有一处引用」），
-     * 免得滚动容器出现第二份定义。
-     * 纵向一律自绘（宽度/最小长度都是我们定的）；`horizontal` 打开的用法另加一条**横向**自绘条。
-     *
-     * 为什么横向也要自绘：图的宽度由**层内节点数**决定，全图模式下轻易超过 390px 的窄栏
-     * （实测 848px）。而 `scrollbar-width:none` 会把原生横向条一并藏掉 ⇒ 只有触控板/Shift+滚轮
-     * 能横移，**纯滚轮的鼠标用户和键盘用户根本够不到右侧内容**（探针 `dev/render-pane.mjs`
-     * 的 pane-graph 变体实测「横向溢出 460px、原生滚动条槽位 0px」）。自绘条是唯一有形的抓手。
+     * 自绘滚动容器（任务列表 + 两个详情页 + 依赖图共用；client 套件断言「只有一处引用」）。
+     * 横向也自绘：图的宽度由层内节点数决定（实测 848px > 390px 窄栏），而 scrollbar-width:none
+     * 会把原生横条一并藏掉 ⇒ 纯滚轮/键盘用户够不到右侧内容（pane-graph 实测横向槽位 0px）。
      */
     styles.graphScroll = {
       flex: '1 1 auto',
@@ -594,21 +569,8 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 交互反馈 CSS（hover / 按下 / 焦点环）。
-     *
-     * 为什么**必须注入样式表**而不是写内联样式：
-     *   ① 内联样式**没有伪类**，`:hover`/`:active`/`:focus-visible` 根本写不出来；
-     *   ② 我们的按钮都内联写了 `background: transparent`，而**内联优先级高于任何选择器**
-     *      ——所以 `:hover` 规则必须带 `!important` 才生效。
-     *   这正是「鼠标放上去/点上去没有变化」的机制（用户实测反馈）。
-     *
-     * 注入方式抄平台自己：`dsh-client-ui-sidebar-right` 的 ExpandButton 就是
-     * `<style data-plugin-css=…>` 挂到 `document.head`（见 docs/04 第 9c 节）。
-     *
-     * 颜色用平台**真实语义变量**（第一方插件通用做法，实测 14 处在用）：
-     *   hover  → `--dsw-alias-interactive-bg-hover`
-     *   按下    → `--dsw-alias-interactive-bg-active`
-     * 写错变量名会**静默失效**，所以两个都带兜底色，并由探针真发鼠标事件验证。
+     * 交互反馈 CSS（hover / 按下 / 焦点环）：内联样式没有伪类，且内联 background 优先级更高，
+     * 所以必须注入 <style data-plugin-css> 并用 !important（抄平台 ExpandButton，见 docs/04 §9c）。
      */
     const INTERACTION_CSS_TAG = 'dsh-plugin-orchd/interaction.css'
 
@@ -642,8 +604,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    // 标题脉冲环已移除：入口按钮改为「打开 / 关闭」toggle（见 OrchdToggleButton），
-    // 再点有可见反馈（面板收起），不再需要「面板本来开着 ⇒ 点了没反应」的提示。
+    // 标题脉冲环已移除：入口按钮改为「打开 / 关闭」toggle。
 
     async function writeClipboard(text) {
       if (navigator.clipboard?.writeText !== undefined) {
@@ -706,14 +667,8 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 状态条 = 筛选器（FR-5.2）。
-     *
-     * 设计要点（每一条都对应一条验收标准）：
-     *  - **8 个互斥模式**：`all`（总数）/ `active`（活跃=非终态）/ 6 个具体状态；单选（radio 语义，AC-5.6/5.7）。
-     *  - **再点一次回全部**（AC-5.7）：`onSelect(status === current ? 'all' : status)`。
-     *  - **0 值仍可点击**（FR-5.9/AC-5.8）：用 `opacity` 弱化，**不是** `disabled`。
-     *  - **计数直接采用引擎 summary**（FR-4.3），UI 不重算；`cancelled` 等缺键显示「—」。
-     *  - 可点击表达（FR-5.10）：`role=radio` + `aria-checked` + `cursor:pointer` + 选中态**描边**。
+     * 状态条 = 筛选器（FR-5.2）：8 个互斥模式、再点回全部、0 值弱化但仍可点、计数取引擎 summary、
+     * role=radio + 选中态描边（AC-5.6/5.7、FR-5.9/5.10、FR-4.3）。
      */
     function StatusStripFilter({ summary, mode, onSelect, counts, t, labels, unitKey }) {
       // `labels` 由调用方给（任务视图用 6 个任务状态，想法视图用 5 个想法状态），
@@ -864,14 +819,8 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 自绘滚动条的几何计算（纯函数，可单测）。
-     *
-     * 为什么必须自绘：虚拟列表的内容高度 = 行数 × 行高（805 × 52 = **41,860px**），
-     * 可视区只有 ~520px，所以**原生滚动条的滑块长度只能是约 1.2%**（≈6px）——
-     * 无论把 `--dsh-scrollbar-width` 调多宽，滑块都还是一个「小点」。
-     * Chromium 也没有「滑块最小长度」这种属性，所以只有自绘才能同时把宽度和长度做大。
-     *
-     * 长度取 `比例长度` 与 `最小可抓取长度` 的较大者；位置按 scrollTop 线性映射到可用轨道。
+     * 自绘滚动条几何（纯函数）：长度取「比例长度」与「最小可抓取长度」的较大者，位置按 scrollTop 线性映射。
+     * 必须自绘：原生条 5px、滑块长度只能是内容比例（41,860px 内容 / ~520px 视口 ≈ 6px），且无最小长度属性。
      */
     function computeThumb({ trackLength, contentLength, scrollTop }) {
       if (!(trackLength > 0) || !(contentLength > trackLength)) return null
@@ -893,25 +842,10 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 自绘滚动容器：**任务列表 + 两个详情页共用**。
-     *
-     * 为什么必须自绘（不是洁癖，是平台限制）：
-     *   · 平台全局滚动条是 `--dsh-scrollbar-width: 5px` + `scrollbar-bg-l1`（10% 白），
-     *     深色面板上几乎看不见；`scrollbar-width` 还**不可继承**，在面板里调不大；
-     *   · Chromium 没有「滑块最小长度」属性——内容一长，原生滑块就缩成一个小点。
-     * 所以宽度与最小长度都自己画（`SCROLLBAR_WIDTH` / `SCROLLBAR_MIN_THUMB`）。
-     *
-     * `children` 传**函数**时会拿到 `viewport`（`{top, height, content}`），供虚拟化列表用；
-     * 传节点则按普通滚动内容渲染（详情页用）。
-     *
-     * @param {object} props
-     * @param {string} props.label 无障碍名（role=scrollbar 的 aria-label）
-     * @param {object|Function} props.children
-     * @param {object} [props.scrollerRef] 调用方自己的 ref（虚拟列表要拿它 scrollTo）
-     * @param {object} [props.scrollerStyle] 滚动区样式（默认 styles.scroll）
-     * @param {object} [props.contentStyle] 内容容器样式
-     * @param {number} [props.contentLength] 已知内容长度（虚拟列表用；否则量 scrollHeight）
-     * @param {number} [props.keyStep] 方向键步长（虚拟列表传行高）
+     * 自绘滚动容器（任务列表 + 两个详情页共用）：宽度与最小滑块长度都自己画（平台原生条 5px 且不可继承）。
+     * `children` 传函数时拿到 `viewport`（{top,height,content}）供虚拟列表用；传节点则按普通内容渲染。
+     * props：label（role=scrollbar 的 aria-label）、children、scrollerRef、scrollerStyle、contentStyle、
+     * contentLength（已知内容长度，虚拟列表用）、keyStep（方向键步长）、horizontal。
      */
     function ScrollPane({ label, children, scrollerRef, scrollerStyle, contentStyle, contentLength, keyStep, horizontal }) {
       const innerRef = React.useRef(null)
@@ -1144,18 +1078,8 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 虚拟化列表（任务与想法共用）。
-     *
-     * - **纯 CSS 虚拟化**：绝对定位行 + 上下 overscan，只为可视区渲染 DOM。
-     *   平台 seed 表只有 9 个模块，浏览器半侧不允许第三方依赖（NFR-4.1）。
-     * - **自绘滚动条**：交给 `ScrollPane`（宽度与最小长度都由我们定，原生条已隐藏）。
-     *   行右侧预留 `SCROLLBAR_WIDTH + 10` 的内边距，文字不会被滑块压住。
-     *
-     * @param {object} props
-     * @param {Array} props.rows
-     * @param {number} props.rowHeight
-     * @param {(row: object, index: number, offset: number) => object} props.renderRow
-     * @param {string} props.label 无障碍名（role=scrollbar 的 aria-label）
+     * 虚拟化列表（任务与想法共用）：纯 CSS 虚拟化（绝对定位行 + overscan，只渲染可视区），
+     * 滚动条交给 ScrollPane。props：rows、rowHeight、renderRow(row,index,offset)、label。
      */
     function VirtualList({ rows, rowHeight, renderRow, label }) {
       const scrollerRef = React.useRef(null)
@@ -1176,6 +1100,17 @@ window.__ModuleLoader__.load({
           )
         }
       })
+    }
+
+    // 列表徽标（§4）：文字 + data-orchd-badge，非颜色-only
+    function rowBadges(row, t) {
+      const tr = trOf(t)
+      const badges = []
+      if (row?.hasDesignBinding === true) badges.push({ kind: 'design', text: tr('dDesignBadge') })
+      const risks = Array.isArray(row?.riskFlags) ? row.riskFlags : []
+      if (risks.length > 0) badges.push({ kind: 'risk', text: `${tr('dRiskBadge')} ${risks.length}` })
+      if (row?.archived === true) badges.push({ kind: 'archived', text: tr('dArchivedBadge') })
+      return badges
     }
 
     function TaskRowItem({ row, t, offset, onOpen }) {
@@ -1203,6 +1138,11 @@ window.__ModuleLoader__.load({
             React.createElement('span', { key: 'd', style: styles.chipDot }),
             React.createElement('span', { key: 'l' }, row.status === null || row.status === undefined ? '—' : row.status)
           ]),
+          ...rowBadges(row, t).map((badge) => React.createElement('span', {
+            key: `badge-${badge.kind}`,
+            'data-orchd-badge': badge.kind,
+            style: styles.badge
+          }, badge.text)),
           React.createElement('span', { key: 'm', style: { overflow: 'hidden', textOverflow: 'ellipsis' } }, meta.join(' · '))
         ])
       ])
@@ -1535,6 +1475,72 @@ window.__ModuleLoader__.load({
       ].filter(Boolean))
     }
 
+    // v3 任务卡字段（§4）纯函数；ISO 时间原样
+    const isObj = (v) => v !== null && typeof v === 'object'
+    const arrOf = (v) => (Array.isArray(v) ? v : [])
+    const trOf = (t) => (typeof t === 'function' ? t : (k) => k)
+    const fieldText = (v) => (typeof v === 'string' ? v || null : Number.isFinite(v) ? String(v) : null)
+    const listOf = (v) => arrOf(v).map(fieldText).filter(Boolean)
+    const joinOf = (v, sep) => listOf(v).join(sep) || null
+    const arrow = (a, b) => (a === null ? null : b === null ? a : `${a} → ${b}`)
+
+    // latestReview 三要素；resume 只四项
+    const latestReviewText = (r) => (isObj(r) ? listOf([r.type, r.result, r.timestamp]) : []).join(' · ') || null
+    const resumeText = (r) => ['status', 'branch', 'last_verify', 'ac_remaining'].filter((k) => isObj(r) && fieldText(r[k]) !== null).map((k) => `${k} ${r[k]}`).join(' · ') || null
+
+    // 设计绑定组；空数组 ⇒ 整组不渲染（不摆空标题）；长段落走 pre
+    function designBindingRows(task, t) {
+      const tr = trOf(t)
+      const o = isObj(task) ? task : {}
+      const note = isObj(o.designNote) ? o.designNote : {}
+      const ex = isObj(o.designException) ? o.designException : {}
+      const txt = (v) => (Array.isArray(v) ? listOf(v).join('\n') : fieldText(v))
+      const tiers = [o.designTier, o.designTierComputed, o.designTierEffective].map(fieldText)
+      const tierRows = tiers.every((x) => x === null) ? [] : ['dDesignTier', 'dDesignTierComputed', 'dDesignTierEffective'].map((k, i) => [tr(k), tiers[i] ?? '—'])
+      const surfaces = arrOf(o.surfaceRefresh).map((i) => (isObj(i) ? arrow(fieldText(i.surface), fieldText(i.path)) : null))
+      const refs = arrOf(o.designRefs).map((r) => (isObj(r) && fieldText(r.designId) ? [r.designId, joinOf(r.sections, ', ')].filter(Boolean).join(' · ') : null))
+      const rows = [
+        [tr('dKind'), fieldText(o.kind)],
+        ...tierRows,
+        [tr('dDesignException'), arrow(fieldText(ex.reason), fieldText(ex.effectiveTier))],
+        [tr('dRiskFlags'), joinOf(o.riskFlags, ', ')],
+        [tr('dSurfaceRefresh'), joinOf(surfaces, '; ')],
+        [tr('dDesignNote'), txt(note.problem), true],
+        ['decision', txt(note.decision), true],
+        ['alternatives', txt(note.alternatives), true],
+        ['rollback', txt(note.rollback), true],
+        [tr('dDesignRefs'), joinOf(refs, '; ')],
+        ['designId', fieldText(o.designId)],
+        [tr('dPhase'), fieldText(o.phase)]
+      ]
+      return rows.filter((row) => row[1] !== null)
+    }
+
+    // 时间组：ISO 原样；空数组 ⇒ 不渲染
+    function timeGroupRows(task, t) {
+      const tr = trOf(t)
+      const rows = [['dClaimedAt', 'claimedAt'], ['dReviewClaimedAt', 'reviewClaimedAt'], ['dUpdatedAt', 'updatedAt']].map(([k, f]) => [tr(k), fieldText(task?.[f])])
+      rows.push([tr('dLatestReview'), latestReviewText(task?.latestReview)], [tr('dResume'), resumeText(task?.resume)])
+      return rows.filter((row) => row[1] !== null)
+    }
+
+    // 外壳：空 rows → null（不出空标题）
+    function detailGroup(key, label, rows) {
+      if (rows.length === 0) return null
+      const cells = rows.map(([k, v, pre], i) => React.createElement(Row, { key: i, label: k }, pre === true ? React.createElement('pre', { style: styles.pre }, v) : v))
+      return React.createElement('div', { key: `v3-${key}`, 'data-orchd-detail-group': key }, [
+        React.createElement('h4', { key: 'h', style: styles.h4 }, label),
+        React.createElement('div', { key: 'g', style: styles.grid }, cells)
+      ])
+    }
+
+    // 归档横幅：仅 unreadable 非 null
+    function archiveWarningOf(context, t) {
+      const archive = context?.definitionArchive
+      if (!isObj(archive) || archive.state !== 'unreadable') return null
+      return trOf(t)('archiveWarning').replace('{reason}', fieldText(archive.reason) ?? '—').replace('{n}', fieldText(context?.activeTaskCount) ?? '—')
+    }
+
     function DetailView({ sessionId, taskId, t, onBack, onOpenTask }) {
       const [state, setState] = React.useState({ status: 'loading', data: null, error: null })
       // 审查时间线（FR-8，P2 收窄）：与单任务详情**分开懒加载**，点按钮才拉——
@@ -1679,6 +1685,10 @@ window.__ModuleLoader__.load({
             React.createElement(Row, { key: 'src', label: t('dSource') }, task.source ?? '—'),
             React.createElement(Row, { key: 'ds', label: t('dDownstreamCount') }, Array.isArray(task.dependents) ? String(task.dependents.length) : '—')
           ]),
+
+          // v3 两组（§4）：11 行网格后、AC 前；整组无字段则不出标题
+          detailGroup('design', t('dDesignGroup'), designBindingRows(task, t), t),
+          detailGroup('time', t('dTimeGroup'), timeGroupRows(task, t), t),
 
           React.createElement('h4', { key: 'h-ac', style: styles.h4 }, `${t('dAcceptance')}（${(task.acceptanceCriteria ?? []).length}）`),
           (task.acceptanceCriteria ?? []).length === 0
@@ -2852,6 +2862,10 @@ window.__ModuleLoader__.load({
       const [graphLens, setGraphLens] = React.useState('chain')
       const [graphUmbrella, setGraphUmbrella] = React.useState(null)
       const [graphClassic, setGraphClassic] = React.useState(false)
+      // §12.2 自动刷新：on | paused（连续 3 次探测失败暂停）；revision 变化才静默重取
+      const [autoRefresh, setAutoRefresh] = React.useState('on')
+      const revisionRef = React.useRef('')
+      const pollFailRef = React.useRef(0)
       const [showDiagnostics, setShowDiagnostics] = React.useState(false)
       // mode 是**单选**筛选模式（'all' | 'active' | 具体状态），见 applyFilters（FR-5.2）
       const [filters, setFilters] = React.useState({ keyword: '', mode: 'all', modules: [], sortBy: 'default' })
@@ -2960,7 +2974,58 @@ window.__ModuleLoader__.load({
         return () => controller.abort()
       }, [sessionId, tick, contextState, view, graphFocus, graphIncludeTerminal, effectiveGraphLens, graphUmbrella])
 
+      // §12.2：可见性门控轮询；仅指纹变化才 setTick 静默重取（不复用整体重取以免闪烁）。
+      React.useEffect(() => {
+        if (sessionId === null || contextState !== 'ready') return undefined
+        const doc = typeof document === 'undefined' ? null : document
+        const isVisible = () => (doc?.visibilityState ?? 'visible') === 'visible'
+        let timer = null, disposed = false
+        const stop = () => { if (timer !== null) { clearInterval(timer); timer = null } }
+        const probe = async () => {
+          try {
+            const body = await api('/orchd/api/revision', { session: sessionId }, undefined)
+            if (disposed) return
+            const key = revisionKeyOf(body?.data)
+            pollFailRef.current = 0
+            setAutoRefresh('on')
+            if (revisionRef.current === '') { revisionRef.current = key; return }
+            if (key !== '' && key !== revisionRef.current) {
+              revisionRef.current = key
+              setTick((value) => value + 1)
+            }
+          } catch {
+            if (disposed) return
+            pollFailRef.current += 1
+            if (pollFailRef.current >= 3) { setAutoRefresh('paused'); stop() }
+          }
+        }
+        const start = () => {
+          stop()
+          if (!isVisible()) return
+          timer = setInterval(probe, REVISION_POLL_MS)
+        }
+        const onVisibility = () => {
+          if (!isVisible()) { stop(); return }
+          pollFailRef.current = 0
+          setAutoRefresh('on')
+          probe()
+          start()
+        }
+        probe()
+        start()
+        doc?.addEventListener?.('visibilitychange', onVisibility)
+        return () => {
+          disposed = true
+          stop()
+          doc?.removeEventListener?.('visibilitychange', onVisibility)
+        }
+      }, [sessionId, contextState])
+
       const redetect = () => {
+        // 手动刷新：恢复轮询并清零失败计数（§12.2）
+        pollFailRef.current = 0
+        setAutoRefresh('on')
+        revisionRef.current = ''
         setBoard({ status: 'idle', data: null, error: null, meta: null })
         setIdeas({ status: 'idle', data: null, error: null, meta: null })
         setGraph({ status: 'idle', data: null, error: null, meta: null })
@@ -2970,6 +3035,14 @@ window.__ModuleLoader__.load({
       }
       const data = context.data
       const snapshotAt = board.meta?.fetchedAt ?? context.meta?.fetchedAt
+      const autoRefreshKey = autoRefresh === 'paused' ? 'autoRefreshPaused' : 'autoRefreshOn'
+      const snapshotRow = sessionId === null ? null : React.createElement('div', { key: 's', style: styles.sub, 'data-orchd-auto-refresh': autoRefresh }, [
+        snapshotAt === undefined
+          ? null
+          : React.createElement('span', { key: 't' }, `${t('snapshotAt')} ${formatTime(snapshotAt)}`),
+        snapshotAt === undefined ? null : React.createElement('span', { key: 'sep' }, ' · '),
+        React.createElement('span', { key: 'a' }, t(autoRefreshKey))
+      ].filter(Boolean))
 
       const head = React.createElement('div', { style: styles.head }, [
         React.createElement('div', { key: 'h', style: styles.header }, [
@@ -2983,9 +3056,7 @@ window.__ModuleLoader__.load({
             key: 'r', type: 'button', style: styles.iconButton, onClick: redetect, 'aria-label': t('redetect'), title: t('redetect')
           }, '⟳')
         ].filter(Boolean)),
-        snapshotAt === undefined
-          ? null
-          : React.createElement('div', { key: 's', style: styles.sub }, `${t('snapshotAt')} ${formatTime(snapshotAt)}`)
+        snapshotRow
       ].filter(Boolean))
 
       const bodyContent = (() => {
@@ -3329,8 +3400,20 @@ window.__ModuleLoader__.load({
               : null
           ].filter(Boolean))
 
+      // 归档横幅（§4）：不阻塞其它区域
+      const archiveWarning = archiveWarningOf(data, t)
+      const archiveBanner = archiveWarning === null
+        ? null
+        : React.createElement('div', {
+            key: 'archive-warning',
+            role: 'status',
+            'data-orchd-archive-warning': 'true',
+            style: styles.archiveBanner
+          }, archiveWarning)
+
       return React.createElement('div', { style: styles.page, 'data-orchd-panel': TAB_ID, 'data-session-id': sessionId ?? '' }, [
         head,
+        archiveBanner,
         bodyContent,
         diagnostics
       ].filter(Boolean))
@@ -3486,7 +3569,7 @@ window.__ModuleLoader__.load({
      * 必须有单测兜底。测试用 `test/client.test.mjs` 的 `vm` + 假 `window.__ModuleLoader__`
      * 加载本文件再取这个对象断言。
      */
-    exports.__testables = { applyFilters, sortRows, countByStatus, TASK_STATUS_I18N, ALL_STATUSES, styles, IDEA_STATUSES_UI, IDEA_STATUS_I18N, ideaCommandsFor, ideaDisplayStatus, ideaStatusText, computeThumb, scrollTopForThumbTop, SCROLLBAR_WIDTH, SCROLLBAR_MIN_THUMB, ROW_HEIGHT, IDEA_ROW_HEIGHT, interactionCss, INTERACTION_CSS_TAG, layoutDependencyGraph, graphAnomalyRows, graphNodeLabel, truncateLabel, graphTextUnits, GRAPH_NODE_W, GRAPH_NODE_H, GRAPH_GAP_X, GRAPH_GAP_Y, graphLensOptions, layoutWaveGraph, umbrellaNodeLabel, graphLegendRows, GRAPH_LENS_ORDER, GRAPH_WAVE_LABEL_W, graphLabelMode, GRAPH_SEGMENT_GAP, GRAPH_ZOOM_MIN, GRAPH_ZOOM_MAX, GRAPH_VIEWPORT_FALLBACK, GRAPH_PAD, layoutFilesGraph, graphCriticalPathText }
+    exports.__testables = { applyFilters, sortRows, countByStatus, TASK_STATUS_I18N, ALL_STATUSES, styles, IDEA_STATUSES_UI, IDEA_STATUS_I18N, ideaCommandsFor, ideaDisplayStatus, ideaStatusText, computeThumb, scrollTopForThumbTop, SCROLLBAR_WIDTH, SCROLLBAR_MIN_THUMB, ROW_HEIGHT, IDEA_ROW_HEIGHT, interactionCss, INTERACTION_CSS_TAG, layoutDependencyGraph, graphAnomalyRows, graphNodeLabel, truncateLabel, graphTextUnits, GRAPH_NODE_W, GRAPH_NODE_H, GRAPH_GAP_X, GRAPH_GAP_Y, graphLensOptions, layoutWaveGraph, umbrellaNodeLabel, graphLegendRows, GRAPH_LENS_ORDER, GRAPH_WAVE_LABEL_W, graphLabelMode, GRAPH_SEGMENT_GAP, GRAPH_ZOOM_MIN, GRAPH_ZOOM_MAX, GRAPH_VIEWPORT_FALLBACK, GRAPH_PAD, layoutFilesGraph, graphCriticalPathText, revisionKeyOf, REVISION_POLL_MS, rowBadges, fieldText, latestReviewText, resumeText, designBindingRows, timeGroupRows, detailGroup, archiveWarningOf }
     return module.exports
   }
 })
