@@ -1,6 +1,5 @@
 /**
- * dsh-plugin-orchd · 浏览器半侧（手写 bundle，零构建链，NFR-4.1）。
- * 承载形态：右侧栏面板（决策 D3；整页会替换中栏）；注册形状对照 docs/04，只 require 平台 seed 模块。
+ * dsh-plugin-orchd · 浏览器半侧（手写 bundle，零构建链，NFR-4.1）；注册形状对照 docs/04，只 require 平台 seed 模块。
  */
 
 window.__ModuleLoader__.load({
@@ -11,6 +10,9 @@ window.__ModuleLoader__.load({
     Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' })
 
     const React = require('react')
+
+    /** 渲染别名（等价 el）：全文统一用它，省字节也少一层属性查找。 */
+    const el = React.createElement
 
     /** 面板类型 id：sidebarRightTabs.register({id}) 与正文/标题注册的 key 都用它。 */
     const TAB_ID = 'dsh-plugin-orchd'
@@ -29,10 +31,7 @@ window.__ModuleLoader__.load({
     /** 自绘滑块的最小长度（原生做不到）：41,860px 内容 / ~520px 可视时原生滑块仅约 6px，抓不住。 */
     const SCROLLBAR_MIN_THUMB = 72
 
-        /**
-     * i18n 单表：键 → [中文, 英文]。键名只写一遍，`zh` / `en` 由本表派生后交给 ctx.locale.register；
-     * 分组注释沿用中文侧（英文侧同一分组，不再重复注释）。
-     */
+    /** i18n 单表：键 → [中文, 英文]；zh/en 派生后交给 ctx.locale.register，分组注释只写中文侧。 */
     const I18N = {
       panel: ['orchd 任务', 'Orchd Tasks'],
       title: ['orchd 任务', 'Orchd Tasks'],
@@ -246,6 +245,8 @@ window.__ModuleLoader__.load({
       graphBackToAll: ['返回全图', 'Back to full graph'],
       graphEmptyActive: ['当前没有活跃任务', 'No active tasks right now'],
       graphEmptyActiveHint: ['打开「含终态任务」可看完整依赖图（本图隐藏了 {n} 个终态任务）。', 'Turn on "Include finished tasks" for the whole graph ({n} finished tasks hidden here).'],
+      graphEmptyShowTerminal: ['显示 {n} 个终态任务', 'Show {n} finished tasks'],
+      graphEmptyOpenList: ['切到列表看归档', 'Open the list to see archived'],
       graphHiddenTerminal: ['已隐藏 {n} 个终态任务', '{n} finished tasks hidden'],
       graphTruncated: ['节点太多，只画了前 {n} 个', 'Too many nodes — only the first {n} are drawn'],
       graphAnomalyTitle: ['依赖关系异常（引擎不阻止，这里如实标注）', 'Dependency anomalies (not blocked by the engine; labelled here)'],
@@ -519,24 +520,20 @@ window.__ModuleLoader__.load({
     // ── 小组件 ───────────────────────────────────────────────────────────
     function OrchdIcon(props) {
       const size = typeof props?.size === 'number' ? props.size : 16
-      return React.createElement('svg', {
+      return el('svg', {
         width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
         strokeWidth: 1.75, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false'
       }, [
-        React.createElement('circle', { key: 'a', cx: 6, cy: 6, r: 2.5 }),
-        React.createElement('circle', { key: 'b', cx: 18, cy: 6, r: 2.5 }),
-        React.createElement('circle', { key: 'c', cx: 12, cy: 18, r: 2.5 }),
-        React.createElement('path', { key: 'd', d: 'M7.8 7.8 10.4 15.8' }),
-        React.createElement('path', { key: 'e', d: 'M16.2 7.8 13.6 15.8' }),
-        React.createElement('path', { key: 'f', d: 'M8.5 6h7' })
+        el('circle', { key: 'a', cx: 6, cy: 6, r: 2.5 }),
+        el('circle', { key: 'b', cx: 18, cy: 6, r: 2.5 }),
+        el('circle', { key: 'c', cx: 12, cy: 18, r: 2.5 }),
+        el('path', { key: 'd', d: 'M7.8 7.8 10.4 15.8' }),
+        el('path', { key: 'e', d: 'M16.2 7.8 13.6 15.8' }),
+        el('path', { key: 'f', d: 'M8.5 6h7' })
       ])
     }
 
-    /**
-     * 自绘滚动容器（任务列表 + 两个详情页 + 依赖图共用；client 套件断言「只有一处引用」）。
-     * 横向也自绘：图的宽度由层内节点数决定（实测 848px > 390px 窄栏），而 scrollbar-width:none
-     * 会把原生横条一并藏掉 ⇒ 纯滚轮/键盘用户够不到右侧内容（pane-graph 实测横向槽位 0px）。
-     */
+    /** 自绘滚动容器（列表 / 详情 / 图共用；横向也自绘：原生条会随 scrollbar-width:none 一起消失）。 */
     styles.graphScroll = {
       flex: '1 1 auto',
       width: '100%',
@@ -550,28 +547,25 @@ window.__ModuleLoader__.load({
 
     function Row({ label, children }) {
       return [
-        React.createElement('div', { key: 'k', style: styles.key }, label),
-        React.createElement('div', { key: 'v', style: styles.mono }, children)
+        el('div', { key: 'k', style: styles.key }, label),
+        el('div', { key: 'v', style: styles.mono }, children)
       ]
     }
 
     function Card({ title, badge, state, children }) {
       const color = STATE_TOKEN[state] ?? TOKEN.labelSecondary
-      return React.createElement('section', { style: styles.card }, [
-        React.createElement('h3', { key: 'h', style: styles.cardTitle }, [
+      return el('section', { style: styles.card }, [
+        el('h3', { key: 'h', style: styles.cardTitle }, [
           badge === undefined
             ? null
-            : React.createElement('span', { key: 'b', style: { ...styles.badge, color, marginRight: 8 } }, badge),
+            : el('span', { key: 'b', style: { ...styles.badge, color, marginRight: 8 } }, badge),
           title
         ].filter(Boolean)),
-        React.createElement('div', { key: 'c' }, children)
+        el('div', { key: 'c' }, children)
       ])
     }
 
-    /**
-     * 交互反馈 CSS（hover / 按下 / 焦点环）：内联样式没有伪类，且内联 background 优先级更高，
-     * 所以必须注入 <style data-plugin-css> 并用 !important（抄平台 ExpandButton，见 docs/04 §9c）。
-     */
+    /** 交互反馈 CSS（hover / 按下 / 焦点环）：内联样式没有伪类且 background 优先级更高，必须注入 <style data-plugin-css> 并 !important（docs/04 §9c）。 */
     const INTERACTION_CSS_TAG = 'dsh-plugin-orchd/interaction.css'
 
     function interactionCss() {
@@ -622,15 +616,12 @@ window.__ModuleLoader__.load({
       document.body.removeChild(area)
     }
 
-    /**
-     * 复制按钮（FR-6.3 验证命令「可复制」、AC-13.4 详档路径「可复制」）。
-     * 三种状态都有可见反馈（FR-9.1）：待复制 / 已复制 / 复制失败。
-     */
+    /** 复制按钮（FR-6.3 / AC-13.4）：三种状态都有可见反馈（FR-9.1）。 */
     function CopyButton({ text, t, label }) {
       const [state, setState] = React.useState('idle')
       const text0 = label ?? t('copyText')
       const caption = state === 'done' ? t('copied') : (state === 'failed' ? t('copyFailedShort') : text0)
-      return React.createElement('button', {
+      return el('button', {
         type: 'button',
         'data-orchd-copy': 'true',
         'data-copy-state': state,
@@ -649,27 +640,24 @@ window.__ModuleLoader__.load({
     }
 
     function CommandBlock({ text, t }) {
-      return React.createElement('div', null, [
-        React.createElement('pre', { key: 'pre', style: styles.cmdPre }, text),
-        React.createElement('div', { key: 'row', style: styles.controlRow }, [
-          React.createElement(CopyButton, { key: 'btn', text, t, label: t('copy') })
+      return el('div', null, [
+        el('pre', { key: 'pre', style: styles.cmdPre }, text),
+        el('div', { key: 'row', style: styles.controlRow }, [
+          el(CopyButton, { key: 'btn', text, t, label: t('copy') })
         ])
       ])
     }
 
     /** 小标题行 + 右侧动作（用于「验证命令」「详档」这类需要复制入口的段落）。 */
     function SectionHead({ label, action }) {
-      return React.createElement('div', { style: { ...styles.h4, display: 'flex', alignItems: 'center', gap: 8 } }, [
-        React.createElement('span', { key: 'l' }, label),
-        React.createElement('span', { key: 'sp', style: styles.spacer }),
-        action === undefined ? null : React.createElement('span', { key: 'a' }, action)
+      return el('div', { style: { ...styles.h4, display: 'flex', alignItems: 'center', gap: 8 } }, [
+        el('span', { key: 'l' }, label),
+        el('span', { key: 'sp', style: styles.spacer }),
+        action === undefined ? null : el('span', { key: 'a' }, action)
       ].filter(Boolean))
     }
 
-    /**
-     * 状态条 = 筛选器（FR-5.2）：8 个互斥模式、再点回全部、0 值弱化但仍可点、计数取引擎 summary、
-     * role=radio + 选中态描边（AC-5.6/5.7、FR-5.9/5.10、FR-4.3）。
-     */
+    /** 状态条 = 筛选器（FR-5.2）：8 个互斥模式、再点回全部、0 值弱化但仍可点、role=radio + 选中描边（AC-5.6/5.7、FR-5.9/5.10）。 */
     function StatusStripFilter({ summary, mode, onSelect, counts, t, labels, unitKey }) {
       // `labels` 由调用方给（任务视图用 6 个任务状态，想法视图用 5 个想法状态），
       // 但两边**同一套交互模式**（FR-13.6）。
@@ -684,7 +672,7 @@ window.__ModuleLoader__.load({
         return counts?.[key] ?? null
       }
 
-      return React.createElement('div', {
+      return el('div', {
         style: { ...styles.summaryStrip, position: 'relative' },
         role: 'radiogroup',
         'aria-label': t('sTotal'),
@@ -695,7 +683,7 @@ window.__ModuleLoader__.load({
           const on = mode === key
           const value = valueOf(key)
           const zero = value === 0
-          return React.createElement('button', {
+          return el('button', {
             key,
             type: 'button',
             role: 'radio',
@@ -713,13 +701,13 @@ window.__ModuleLoader__.load({
             },
             onClick: () => onSelect(on ? 'all' : key)
           }, [
-            React.createElement('span', { key: 'd', style: styles.chipDot }),
-            React.createElement('span', { key: 'l' }, `${label} `),
-            React.createElement('span', { key: 'v', style: styles.countValue },
+            el('span', { key: 'd', style: styles.chipDot }),
+            el('span', { key: 'l' }, `${label} `),
+            el('span', { key: 'v', style: styles.countValue },
               value === null || value === undefined ? '—' : String(value))
           ])
         }),
-        React.createElement('span', {
+        el('span', {
           key: 'src',
           style: { ...styles.chip, color: TOKEN.labelTertiary },
           title: summary?.source === 'engine' ? t('summaryFromEngine') : t('summaryFromPlugin')
@@ -730,18 +718,18 @@ window.__ModuleLoader__.load({
     /** 当前生效的模块筛选（多选，checkbox 语义）。状态是单选，两者语义不同（见 FR-5 注记）。 */
     function ModuleFilter({ modules, selected, onToggle, t }) {
       if (modules.length === 0) {
-        return React.createElement('div', { style: styles.popoverLabel }, t('filterNoModules'))
+        return el('div', { style: styles.popoverLabel }, t('filterNoModules'))
       }
-      return React.createElement('div', { style: styles.checkRow }, modules.map((module) =>
-        React.createElement('label', { key: module, style: styles.radioItem }, [
-          React.createElement('input', {
+      return el('div', { style: styles.checkRow }, modules.map((module) =>
+        el('label', { key: module, style: styles.radioItem }, [
+          el('input', {
             key: 'i',
             type: 'checkbox',
             checked: selected.includes(module),
             'aria-label': module,
             onChange: () => onToggle(module)
           }),
-          React.createElement('span', { key: 's' }, module)
+          el('span', { key: 's' }, module)
         ])
       ))
     }
@@ -755,10 +743,10 @@ window.__ModuleLoader__.load({
         ['module', t('sortModule')],
         ['status', t('sortStatus')]
       ]
-      return React.createElement('div', { style: styles.radioRow, role: 'radiogroup', 'aria-label': t('filterSort') },
+      return el('div', { style: styles.radioRow, role: 'radiogroup', 'aria-label': t('filterSort') },
         options.map(([value, label]) =>
-          React.createElement('label', { key: value, style: styles.radioItem }, [
-            React.createElement('input', {
+          el('label', { key: value, style: styles.radioItem }, [
+            el('input', {
               key: 'i',
               type: 'radio',
               name: 'orchd-sort',
@@ -766,20 +754,17 @@ window.__ModuleLoader__.load({
               'aria-label': label,
               onChange: () => onSelect(value)
             }),
-            React.createElement('span', { key: 's' }, label)
+            el('span', { key: 's' }, label)
           ])
         )
       )
     }
 
-    /**
-     * 筛选弹层（FR-5.5）：入口常驻可见并带「生效条件数」徽章（AC-5.9）。
-     * 缺省不展开；点外部或再点入口收起。
-     */
+    /** 筛选弹层（FR-5.5）：入口常驻并带「生效条件数」徽章（AC-5.9）；缺省不展开，点外部或再点入口收起。 */
     function FilterPopover({ modules, selectedModules, onToggleModule, sortBy, onSelectSort, onClearAll, activeCount, t }) {
       const [open, setOpen] = React.useState(false)
-      return React.createElement('div', { style: styles.relativeRow }, [
-        React.createElement('button', {
+      return el('div', { style: styles.relativeRow }, [
+        el('button', {
           key: 'entry',
           type: 'button',
           'aria-expanded': open,
@@ -789,20 +774,20 @@ window.__ModuleLoader__.load({
           style: { ...styles.filterEntry, ...(open || activeCount > 0 ? styles.filterEntryActive : {}) },
           onClick: () => setOpen((value) => !value)
         }, [
-          React.createElement('span', { key: 'g' }, '⚙'),
-          React.createElement('span', { key: 'l' }, t('filterPanel')),
+          el('span', { key: 'g' }, '⚙'),
+          el('span', { key: 'l' }, t('filterPanel')),
           activeCount > 0
-            ? React.createElement('span', { key: 'b', style: { ...styles.badge, border: 'none', background: TOKEN.hover, padding: '0 5px' } }, String(activeCount))
+            ? el('span', { key: 'b', style: { ...styles.badge, border: 'none', background: TOKEN.hover, padding: '0 5px' } }, String(activeCount))
             : null
         ].filter(Boolean)),
         open
-          ? React.createElement('div', { key: 'panel', style: styles.popover, 'data-orchd-filter-panel': 'true' }, [
-              React.createElement('div', { key: 'ml', style: styles.popoverLabel }, t('filterModules')),
-              React.createElement(ModuleFilter, { key: 'm', modules, selected: selectedModules, onToggle: onToggleModule, t }),
-              React.createElement('div', { key: 'sl', style: styles.popoverLabel }, t('filterSort')),
-              React.createElement(SortFilter, { key: 's', sortBy, onSelect: onSelectSort, t }),
-              React.createElement('div', { key: 'row', style: styles.controlRow }, [
-                React.createElement('button', {
+          ? el('div', { key: 'panel', style: styles.popover, 'data-orchd-filter-panel': 'true' }, [
+              el('div', { key: 'ml', style: styles.popoverLabel }, t('filterModules')),
+              el(ModuleFilter, { key: 'm', modules, selected: selectedModules, onToggle: onToggleModule, t }),
+              el('div', { key: 'sl', style: styles.popoverLabel }, t('filterSort')),
+              el(SortFilter, { key: 's', sortBy, onSelect: onSelectSort, t }),
+              el('div', { key: 'row', style: styles.controlRow }, [
+                el('button', {
                   key: 'clear',
                   type: 'button',
                   style: styles.button,
@@ -818,10 +803,7 @@ window.__ModuleLoader__.load({
       ].filter(Boolean))
     }
 
-    /**
-     * 自绘滚动条几何（纯函数）：长度取「比例长度」与「最小可抓取长度」的较大者，位置按 scrollTop 线性映射。
-     * 必须自绘：原生条 5px、滑块长度只能是内容比例（41,860px 内容 / ~520px 视口 ≈ 6px），且无最小长度属性。
-     */
+    /** 自绘滚动条几何（纯函数）：长度取「比例」与「最小可抓取」的较大者，位置按 scrollTop 线性映射。 */
     function computeThumb({ trackLength, contentLength, scrollTop }) {
       if (!(trackLength > 0) || !(contentLength > trackLength)) return null
       const maxScroll = contentLength - trackLength
@@ -842,10 +824,8 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 自绘滚动容器（任务列表 + 两个详情页共用）：宽度与最小滑块长度都自己画（平台原生条 5px 且不可继承）。
-     * `children` 传函数时拿到 `viewport`（{top,height,content}）供虚拟列表用；传节点则按普通内容渲染。
-     * props：label（role=scrollbar 的 aria-label）、children、scrollerRef、scrollerStyle、contentStyle、
-     * contentLength（已知内容长度，虚拟列表用）、keyStep（方向键步长）、horizontal。
+     * 自绘滚动容器（列表 / 详情共用；原生条 5px 且不可继承最小滑块长度，故宽度与滑块都自己画）。
+     * children 传函数时拿到 viewport（{top,height,content}）供虚拟列表用。
      */
     function ScrollPane({ label, children, scrollerRef, scrollerStyle, contentStyle, contentLength, keyStep, horizontal }) {
       const innerRef = React.useRef(null)
@@ -1005,27 +985,27 @@ window.__ModuleLoader__.load({
         scrollToX(map[event.key])
       }
 
-      return React.createElement('div', { style: styles.listHost }, [
-        React.createElement('div', {
+      return el('div', { style: styles.listHost }, [
+        el('div', {
           key: 'scroller',
           ref,
           style: scrollerStyle ?? styles.scroll,
           'data-orchd-scroller': 'true'
         },
-          React.createElement('div', { key: 'content', ref: contentRef, style: contentStyle },
+          el('div', { key: 'content', ref: contentRef, style: contentStyle },
             typeof children === 'function' ? children(viewport) : children)
         ),
         // 自绘滚动条：一直可见（用户明确要求能看见），拖动时加深
         // 两个轴同时存在时各自让开对方（否则滑块在右下角叠成一坨）
         thumb === null
           ? null
-          : React.createElement('div', {
+          : el('div', {
               key: 'track',
               style: thumbH === null ? styles.scrollbarTrack : { ...styles.scrollbarTrack, bottom: SCROLLBAR_WIDTH + 4 },
               onPointerDown: onTrackPointerDown,
               'data-orchd-scrollbar': 'track'
             },
-            React.createElement('div', {
+            el('div', {
               key: 'thumb',
               role: 'scrollbar',
               tabIndex: 0,
@@ -1047,14 +1027,14 @@ window.__ModuleLoader__.load({
           ),
         thumbH === null
           ? null
-          : React.createElement('div', {
+          : el('div', {
               key: 'track-x',
               // 纵向条在时给它让出位置；只有横向溢出时不白留 18px
               style: thumb === null ? styles.scrollbarTrackH : { ...styles.scrollbarTrackH, right: SCROLLBAR_WIDTH + 4 },
               onPointerDown: onTrackHPointerDown,
               'data-orchd-scrollbar': 'track-x'
             },
-            React.createElement('div', {
+            el('div', {
               key: 'thumb-x',
               role: 'scrollbar',
               tabIndex: 0,
@@ -1077,16 +1057,13 @@ window.__ModuleLoader__.load({
       ].filter(Boolean))
     }
 
-    /**
-     * 虚拟化列表（任务与想法共用）：纯 CSS 虚拟化（绝对定位行 + overscan，只渲染可视区），
-     * 滚动条交给 ScrollPane。props：rows、rowHeight、renderRow(row,index,offset)、label。
-     */
+    /** 虚拟化列表（任务与想法共用）：纯 CSS 虚拟化（绝对定位行 + overscan），滚动条交给 ScrollPane。props：rows/rowHeight/renderRow/label。 */
     function VirtualList({ rows, rowHeight, renderRow, label }) {
       const scrollerRef = React.useRef(null)
       const total = rows.length
       const contentLength = total * rowHeight
 
-      return React.createElement(ScrollPane, {
+      return el(ScrollPane, {
         label,
         scrollerRef,
         contentLength,
@@ -1122,41 +1099,35 @@ window.__ModuleLoader__.load({
         row.importance ?? row.importanceDerived ?? null,
         row.blockedDownstream === null || row.blockedDownstream === undefined ? null : `↓${row.blockedDownstream}`
       ].filter(Boolean)
-      return React.createElement('button', {
+      return el('button', {
         type: 'button',
         style: { ...styles.rowStyle, top: offset },
         onClick: () => onOpen(row.id),
         'aria-label': `${row.id} ${row.name ?? ''}`.trim(),
         'data-orchd-row': row.id
       }, [
-        React.createElement('span', { key: 'a', style: styles.rowTitle }, [
-          React.createElement('span', { key: 'id', style: styles.rowId }, row.id ?? '—'),
-          React.createElement('span', { key: 'name', style: styles.rowName }, row.name ?? '—')
+        el('span', { key: 'a', style: styles.rowTitle }, [
+          el('span', { key: 'id', style: styles.rowId }, row.id ?? '—'),
+          el('span', { key: 'name', style: styles.rowName }, row.name ?? '—')
         ]),
-        React.createElement('span', { key: 'b', style: styles.rowMeta }, [
-          React.createElement('span', { key: 's', style: { ...styles.statusTag, color: statusColor } }, [
-            React.createElement('span', { key: 'd', style: styles.chipDot }),
-            React.createElement('span', { key: 'l' }, row.status === null || row.status === undefined ? '—' : row.status)
+        el('span', { key: 'b', style: styles.rowMeta }, [
+          el('span', { key: 's', style: { ...styles.statusTag, color: statusColor } }, [
+            el('span', { key: 'd', style: styles.chipDot }),
+            el('span', { key: 'l' }, row.status === null || row.status === undefined ? '—' : row.status)
           ]),
-          ...rowBadges(row, t).map((badge) => React.createElement('span', {
+          ...rowBadges(row, t).map((badge) => el('span', {
             key: `badge-${badge.kind}`,
             'data-orchd-badge': badge.kind,
             style: styles.badge
           }, badge.text)),
-          React.createElement('span', { key: 'm', style: { overflow: 'hidden', textOverflow: 'ellipsis' } }, meta.join(' · '))
+          el('span', { key: 'm', style: { overflow: 'hidden', textOverflow: 'ellipsis' } }, meta.join(' · '))
         ])
       ])
     }
 
     // ── 筛选与排序（FR-5.2..5.5）──────────────────────────────────────────
     /**
-     * 纯函数，便于单测（FR-5.2 的语义全在这里）。
-     *
-     * `mode` 是**单选**：
-     *  - `'all'`    → 全部（含终态，FR-5.6）
-     *  - `'active'` → 非终态（`状态 ∉ {completed, cancelled}`）
-     *  - 具体状态    → 只留该状态
-     * 模块是**多选**（空数组 = 不按模块过滤）。
+     * 纯函数（FR-5.2 语义全在这里）：mode 单选（all / active / 具体状态），模块多选（空数组 = 不过滤）。
      */
     function applyFilters(rows, filters, allStatuses) {
       const keyword = (filters.keyword ?? '').trim().toLowerCase()
@@ -1237,15 +1208,9 @@ window.__ModuleLoader__.load({
 
     // ── 四态卡片（FR-2 / FR-3 / FR-9）────────────────────────────────────
     /**
-     * A 路径：把接入指令交给 agent（FR-3.2）。
-     *
-     * 流程（每一步都对应一条验收标准）：
-     *   ① 点「让 agent 帮我接入」→ `POST /install-entry` **只取文本**（不注入，FR-3.3）；
-     *   ② 弹出确认区，展示**将要注入的全文**（FR-3.3）；
-     *   ③ 用户点「确认注入」→ `POST /install-inject`（带 `confirm: true`）→ 宿主注入；
-     *   ④ 命令服务不可用时按钮禁用 + 给出原因（FR-3.4），C 路径不受影响。
-     *
-     * ⚠ 不注入就不发第二个请求：面板的轮询/刷新路径永远不会碰到 `/install-inject`（FR-3.5）。
+     * A 路径：把接入指令交给 agent（FR-3.2）。① 点按钮 → POST /install-entry 只取文本（不注入）；
+     * ② 确认区展示将注入的全文；③ 确认 → POST /install-inject（confirm:true）；④ 命令服务不可用则禁用 + 说明原因。
+     * ⚠ 不注入就不发第二个请求：轮询/刷新路径永远不碰 /install-inject（FR-3.5）。
      */
     function InstallConfirm({ sessionId, t }) {
       const [entry, setEntry] = React.useState({ status: 'idle', supported: null, text: '', reason: null })
@@ -1289,8 +1254,8 @@ window.__ModuleLoader__.load({
 
       const unsupported = entry.status === 'ready' && entry.supported === false
 
-      const head = React.createElement('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
-        React.createElement('button', {
+      const head = el('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
+        el('button', {
           key: 'a',
           type: 'button',
           'data-orchd-install-a': 'true',
@@ -1303,37 +1268,37 @@ window.__ModuleLoader__.load({
             return load()
           }
         }, state === 'confirming' ? t('installCancel') : t('installAgent')),
-        React.createElement('span', { key: 'n', style: styles.hint },
+        el('span', { key: 'n', style: styles.hint },
           unsupported ? t('installAgentUnavailable') : t('installAgentHint'))
       ])
 
-      return React.createElement('div', null, [
+      return el('div', null, [
         head,
         // 降级说明（FR-3.4）：给出机器可读原因对应的人话
         unsupported
-          ? React.createElement('div', { key: 'why', style: { ...styles.note, padding: '4px 0 0', color: WARN } },
+          ? el('div', { key: 'why', style: { ...styles.note, padding: '4px 0 0', color: WARN } },
               `${t('installDegradeReason')}${entry.reason ?? 'unknown'}`)
           : null,
         state === 'confirming'
-          ? React.createElement('div', { key: 'confirm', style: { ...styles.codeBlock, marginTop: 8 } }, [
-              React.createElement('div', { key: 'lead', style: { fontWeight: 600, marginBottom: 4 } }, t('installConfirmLead')),
-              React.createElement('pre', { key: 'text', style: { ...styles.codeBlock, whiteSpace: 'pre-wrap', margin: 0 } }, entry.text),
-              React.createElement('div', { key: 'btns', style: { ...styles.controlRow, marginTop: 8 } }, [
-                React.createElement('button', {
+          ? el('div', { key: 'confirm', style: { ...styles.codeBlock, marginTop: 8 } }, [
+              el('div', { key: 'lead', style: { fontWeight: 600, marginBottom: 4 } }, t('installConfirmLead')),
+              el('pre', { key: 'text', style: { ...styles.codeBlock, whiteSpace: 'pre-wrap', margin: 0 } }, entry.text),
+              el('div', { key: 'btns', style: { ...styles.controlRow, marginTop: 8 } }, [
+                el('button', {
                   key: 'ok', type: 'button', 'data-orchd-install-confirm': 'true',
                   style: styles.button, onClick: confirm, 'aria-label': t('installConfirm')
                 }, state === 'injecting' ? t('installInjecting') : t('installConfirm')),
-                React.createElement('button', {
+                el('button', {
                   key: 'no', type: 'button', style: styles.button, onClick: () => setState('idle'), 'aria-label': t('installCancel')
                 }, t('installCancel'))
               ])
             ])
           : null,
         state === 'done'
-          ? React.createElement('div', { key: 'done', style: { ...styles.note, padding: '6px 0 0', color: 'var(--dsw-alias-state-success-primary, currentColor)' } }, t('installInjected'))
+          ? el('div', { key: 'done', style: { ...styles.note, padding: '6px 0 0', color: 'var(--dsw-alias-state-success-primary, currentColor)' } }, t('installInjected'))
           : null,
         state === 'error'
-          ? React.createElement('div', { key: 'err', style: { ...styles.note, padding: '6px 0 0', color: 'var(--dsw-alias-state-error-primary, currentColor)' } },
+          ? el('div', { key: 'err', style: { ...styles.note, padding: '6px 0 0', color: 'var(--dsw-alias-state-error-primary, currentColor)' } },
               `${t('installFailed')}${entry.message ?? ''}`)
           : null
       ].filter(Boolean))
@@ -1344,35 +1309,35 @@ window.__ModuleLoader__.load({
 
       if (data.state === 'not_installed' || data.state === 'uninitialized') {
         const notInstalled = data.state === 'not_installed'
-        return React.createElement(Card, {
+        return el(Card, {
           title: notInstalled ? t('installTitle') : t('initTitle'),
           badge: notInstalled ? t('stateNotInstalled') : t('stateUninitialized'),
           state: data.state
         }, [
-          React.createElement('div', { key: 'hint' }, notInstalled ? t('installHint') : t('initHint')),
-          notInstalled ? React.createElement(CommandBlock, { key: 'cmd', text: install.copyText, t }) : null,
-          notInstalled && install.mirrorHint ? React.createElement('div', { key: 'mirror', style: { ...styles.note, padding: 0 } }, install.mirrorHint) : null,
+          el('div', { key: 'hint' }, notInstalled ? t('installHint') : t('initHint')),
+          notInstalled ? el(CommandBlock, { key: 'cmd', text: install.copyText, t }) : null,
+          notInstalled && install.mirrorHint ? el('div', { key: 'mirror', style: { ...styles.note, padding: 0 } }, install.mirrorHint) : null,
           notInstalled
-            ? React.createElement(InstallConfirm, { key: 'agent', sessionId, t })
-            : React.createElement('div', { key: 'path', style: styles.mono }, data.masterPath ?? '—'),
-          React.createElement('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
-            React.createElement('button', { key: 'r', type: 'button', style: styles.button, onClick: onRedetect, 'aria-label': t('redetect') }, t('redetect'))
+            ? el(InstallConfirm, { key: 'agent', sessionId, t })
+            : el('div', { key: 'path', style: styles.mono }, data.masterPath ?? '—'),
+          el('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
+            el('button', { key: 'r', type: 'button', style: styles.button, onClick: onRedetect, 'aria-label': t('redetect') }, t('redetect'))
           ])
         ].filter(Boolean))
       }
 
       // broken
-      return React.createElement(Card, { title: t('brokenTitle'), badge: t('stateBroken'), state: 'broken' }, [
-        React.createElement('div', { key: 'hint' }, t('brokenHint')),
-        React.createElement('div', { key: 'grid', style: styles.grid }, [
-          React.createElement(Row, { key: 'reason', label: t('reason') }, String(data.reason ?? '—'))
+      return el(Card, { title: t('brokenTitle'), badge: t('stateBroken'), state: 'broken' }, [
+        el('div', { key: 'hint' }, t('brokenHint')),
+        el('div', { key: 'grid', style: styles.grid }, [
+          el(Row, { key: 'reason', label: t('reason') }, String(data.reason ?? '—'))
         ]),
-        nextStepFor(data.reason) === undefined ? null : React.createElement(React.Fragment, { key: 'next' }, [
-          React.createElement('div', { key: 'l', style: { ...styles.key, marginTop: 8 } }, t('nextStep')),
-          React.createElement('pre', { key: 'v', style: styles.pre }, nextStepFor(data.reason))
+        nextStepFor(data.reason) === undefined ? null : el(React.Fragment, { key: 'next' }, [
+          el('div', { key: 'l', style: { ...styles.key, marginTop: 8 } }, t('nextStep')),
+          el('pre', { key: 'v', style: styles.pre }, nextStepFor(data.reason))
         ]),
-        React.createElement('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
-          React.createElement('button', { key: 'r', type: 'button', style: styles.button, onClick: onRedetect, 'aria-label': t('redetect') }, t('redetect'))
+        el('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
+          el('button', { key: 'r', type: 'button', style: styles.button, onClick: onRedetect, 'aria-label': t('redetect') }, t('redetect'))
         ])
       ].filter(Boolean))
     }
@@ -1406,11 +1371,8 @@ window.__ModuleLoader__.load({
 
     // ── 详情（FR-6）──────────────────────────────────────────────────────
     /**
-     * 审查事件时间线（FR-8，**P2 收窄**）。
-     *
-     * 只渲染引擎只读回看命令能给的 `REVIEW_SUBMITTED` 事件 + 当前状态摘要；
-     * `unsupportedTypes`（认领/完成/审查认领/强制状态/撤回/修订）必须**显式说明「引擎未提供」**，
-     * 不伪造（FR-8.5 / AC-8.5）。无时间戳显示「—」，不显示错误日期。
+     * 审查事件时间线（FR-8，P2 收窄）：只渲染 REVIEW_SUBMITTED + 状态摘要；其余类型显式说明「引擎未提供」，
+     * 不伪造（FR-8.5）；无时间戳显示「—」，不显示错误日期。
      */
     function ReviewTimeline({ timeline, t }) {
       const events = Array.isArray(timeline?.events) ? timeline.events : []
@@ -1423,54 +1385,54 @@ window.__ModuleLoader__.load({
         ? 'var(--dsw-alias-state-success-primary, currentColor)'
         : (verdict === 'CHANGES_REQUESTED' ? WARN : TOKEN.labelTertiary)
 
-      return React.createElement('section', {
+      return el('section', {
         'data-orchd-review-timeline': 'true',
         style: { ...styles.card, margin: '0 0 12px' }
       }, [
-        React.createElement('h4', { key: 'h', style: styles.cardTitle }, t('reviewTitle')),
+        el('h4', { key: 'h', style: styles.cardTitle }, t('reviewTitle')),
         // 当前状态摘要（与时间线互补：时间线是历史事件，这里是此刻的运行时事实）
-        React.createElement('div', { key: 'cur', style: styles.grid }, [
-          React.createElement(Row, { key: 'p', label: t('dReviewPhase') }, current.reviewPhase ?? '—'),
-          React.createElement(Row, { key: 'by', label: t('dClaimedBy') }, current.reviewClaimedBy ?? '—'),
+        el('div', { key: 'cur', style: styles.grid }, [
+          el(Row, { key: 'p', label: t('dReviewPhase') }, current.reviewPhase ?? '—'),
+          el(Row, { key: 'by', label: t('dClaimedBy') }, current.reviewClaimedBy ?? '—'),
           current.mergeWarning === null || current.mergeWarning === undefined
             ? null
-            : React.createElement(Row, { key: 'mw', label: t('mergeWarning') }, JSON.stringify(current.mergeWarning)),
+            : el(Row, { key: 'mw', label: t('mergeWarning') }, JSON.stringify(current.mergeWarning)),
           current.reviveMarker === null || current.reviveMarker === undefined
             ? null
-            : React.createElement(Row, { key: 'rm', label: t('reviveMarker') }, JSON.stringify(current.reviveMarker))
+            : el(Row, { key: 'rm', label: t('reviveMarker') }, JSON.stringify(current.reviveMarker))
         ].filter(Boolean)),
         events.length === 0
-          ? React.createElement('div', { key: 'empty', style: { ...styles.note, padding: '8px 0 0' }, 'data-orchd-review-empty': 'true' }, t('reviewEmpty'))
-          : React.createElement('ol', { key: 'ol', style: { ...styles.ul, marginTop: 8 } }, events.map((event, index) =>
-              React.createElement('li', {
+          ? el('div', { key: 'empty', style: { ...styles.note, padding: '8px 0 0' }, 'data-orchd-review-empty': 'true' }, t('reviewEmpty'))
+          : el('ol', { key: 'ol', style: { ...styles.ul, marginTop: 8 } }, events.map((event, index) =>
+              el('li', {
                 key: index,
                 style: styles.li,
                 'data-orchd-review-event': String(index)
               }, [
-                React.createElement('div', { key: 'head', style: { ...styles.controlRow, gap: 8 } }, [
-                  React.createElement('span', { key: 'v', style: { ...styles.statusTag, color: verdictColor(event.verdict) } }, [
-                    React.createElement('span', { key: 'd', style: styles.chipDot }),
-                    React.createElement('span', { key: 'l' }, verdictLabel(event.verdict))
+                el('div', { key: 'head', style: { ...styles.controlRow, gap: 8 } }, [
+                  el('span', { key: 'v', style: { ...styles.statusTag, color: verdictColor(event.verdict) } }, [
+                    el('span', { key: 'd', style: styles.chipDot }),
+                    el('span', { key: 'l' }, verdictLabel(event.verdict))
                   ]),
                   event.reviewType === null
                     ? null
-                    : React.createElement('span', { key: 'rt', style: { ...styles.chip, color: TOKEN.labelTertiary } }, `${t('reviewType')} ${event.reviewType}`),
-                  React.createElement('span', { key: 'at', style: { color: TOKEN.labelTertiary } }, event.at ?? t('reviewNoTime'))
+                    : el('span', { key: 'rt', style: { ...styles.chip, color: TOKEN.labelTertiary } }, `${t('reviewType')} ${event.reviewType}`),
+                  el('span', { key: 'at', style: { color: TOKEN.labelTertiary } }, event.at ?? t('reviewNoTime'))
                 ].filter(Boolean)),
                 event.text === null
                   ? null
-                  : React.createElement('pre', { key: 'txt', style: styles.pre }, event.text)
+                  : el('pre', { key: 'txt', style: styles.pre }, event.text)
               ]))),
         // 引擎未提供的事件类型：显式说明，不伪造（AC-8.5）
         unsupported.length === 0
           ? null
-          : React.createElement('div', {
+          : el('div', {
               key: 'unsup',
               'data-orchd-review-unsupported': unsupported.join(','),
               style: { ...styles.note, padding: '8px 0 0' }
             }, [
-              React.createElement('div', { key: 'a' }, t('reviewUnsupported')),
-              React.createElement('div', { key: 'b', style: { color: TOKEN.labelTertiary } }, `${unsupported.join(' · ')}（${t('reviewUnsupportedTypes')}）`)
+              el('div', { key: 'a' }, t('reviewUnsupported')),
+              el('div', { key: 'b', style: { color: TOKEN.labelTertiary } }, `${unsupported.join(' · ')}（${t('reviewUnsupportedTypes')}）`)
             ])
       ].filter(Boolean))
     }
@@ -1527,10 +1489,10 @@ window.__ModuleLoader__.load({
     // 外壳：空 rows → null（不出空标题）
     function detailGroup(key, label, rows) {
       if (rows.length === 0) return null
-      const cells = rows.map(([k, v, pre], i) => React.createElement(Row, { key: i, label: k }, pre === true ? React.createElement('pre', { style: styles.pre }, v) : v))
-      return React.createElement('div', { key: `v3-${key}`, 'data-orchd-detail-group': key }, [
-        React.createElement('h4', { key: 'h', style: styles.h4 }, label),
-        React.createElement('div', { key: 'g', style: styles.grid }, cells)
+      const cells = rows.map(([k, v, pre], i) => el(Row, { key: i, label: k }, pre === true ? el('pre', { style: styles.pre }, v) : v))
+      return el('div', { key: `v3-${key}`, 'data-orchd-detail-group': key }, [
+        el('h4', { key: 'h', style: styles.h4 }, label),
+        el('div', { key: 'g', style: styles.grid }, cells)
       ])
     }
 
@@ -1583,15 +1545,15 @@ window.__ModuleLoader__.load({
       // 三个分支（loading / error / 正常）共用它，保证行为一致。
       // 正文区用 `ScrollPane`：既有**可见的自绘滚动条**（原来这里只有隐藏的原生条，
       // 也就是用户说的「滚轮显示不出来」），又只滚正文不动固定条。
-      const shell = (barActions, bodyChildren) => React.createElement('div', { style: styles.detailPage }, [
-        React.createElement('div', { key: 'bar', style: styles.detailBar }, [
-          React.createElement('button', {
+      const shell = (barActions, bodyChildren) => el('div', { style: styles.detailPage }, [
+        el('div', { key: 'bar', style: styles.detailBar }, [
+          el('button', {
             key: 'back', type: 'button', style: styles.button, onClick: onBack, 'aria-label': t('back')
           }, `← ${t('back')}`),
-          React.createElement('span', { key: 'sp', style: styles.spacer }),
+          el('span', { key: 'sp', style: styles.spacer }),
           ...barActions
         ].filter(Boolean)),
-        React.createElement(ScrollPane, {
+        el(ScrollPane, {
           key: 'pane',
           label: t('dScrollLabel'),
           scrollerStyle: styles.detailScroll,
@@ -1601,13 +1563,13 @@ window.__ModuleLoader__.load({
       ])
 
       if (state.status === 'loading') {
-        return shell([], [React.createElement('div', { key: 'l', style: styles.note }, t('loading'))])
+        return shell([], [el('div', { key: 'l', style: styles.note }, t('loading'))])
       }
       if (state.status === 'error') {
         return shell([], [
-          React.createElement(Card, { key: 'e', title: t('localError'), badge: t('stateBroken'), state: 'broken' }, [
-            React.createElement('div', { key: 'm' }, state.error?.message ?? 'unknown error'),
-            React.createElement('pre', { key: 'd', style: styles.pre }, JSON.stringify(state.error?.envelope?.error ?? {}, null, 2))
+          el(Card, { key: 'e', title: t('localError'), badge: t('stateBroken'), state: 'broken' }, [
+            el('div', { key: 'm' }, state.error?.message ?? 'unknown error'),
+            el('pre', { key: 'd', style: styles.pre }, JSON.stringify(state.error?.envelope?.error ?? {}, null, 2))
           ])
         ])
       }
@@ -1615,23 +1577,23 @@ window.__ModuleLoader__.load({
       const payload = state.data ?? {}
       const task = payload.task ?? {}
       // linkable = 条目是任务 id 且宿主给了跳转回调 → 渲染成可点按钮（FR-6.5 依赖跳转）
-      const section = (label, values, linkable = false) => React.createElement('div', { key: label }, [
-        React.createElement('h4', { key: 'h', style: styles.h4 }, label),
+      const section = (label, values, linkable = false) => el('div', { key: label }, [
+        el('h4', { key: 'h', style: styles.h4 }, label),
         Array.isArray(values) && values.length > 0
-          ? React.createElement('ul', { key: 'u', style: styles.ul }, values.map((value, index) => React.createElement('li', { key: index, style: styles.li },
+          ? el('ul', { key: 'u', style: styles.ul }, values.map((value, index) => el('li', { key: index, style: styles.li },
               linkable && typeof onOpenTask === 'function' && typeof value === 'string' && /^task-[a-z0-9-]+$/.test(value)
-                ? React.createElement('button', {
+                ? el('button', {
                     key: 'jump', type: 'button', style: { ...styles.button, padding: '2px 8px' },
                     onClick: () => onOpenTask(value), 'aria-label': `${t('jumpTo')}${value}`,
                     'data-orchd-jump-task': value
                   }, value)
                 : String(value))))
-          : React.createElement('div', { key: 'e', style: styles.mono }, t('dNoData'))
+          : el('div', { key: 'e', style: styles.mono }, t('dNoData'))
       ])
 
       // 「拉取审查意见」按钮放进**固定条**（不随正文滚动）；加载出来的内容放在正文**最上方**，
       // 这样点完立刻可见，不必滚到底部（原实现把按钮和结果都放在正文末尾）。
-      const reviewButton = React.createElement('button', {
+      const reviewButton = el('button', {
         key: 'load',
         type: 'button',
         'data-orchd-review-load': 'true',
@@ -1645,78 +1607,78 @@ window.__ModuleLoader__.load({
       const reviewSection = history.status === 'idle'
         ? null
         : (history.status === 'loading'
-            ? React.createElement('div', { key: 'rev-load', style: styles.note }, t('dReviewLoading'))
+            ? el('div', { key: 'rev-load', style: styles.note }, t('dReviewLoading'))
             : (history.status === 'error'
-                ? React.createElement(Card, { key: 'rev-err', title: t('reviewUnavailable'), badge: t('stateBroken'), state: 'broken' }, [
-                    React.createElement('div', { key: 'm' }, history.error?.message ?? 'unknown error'),
-                    React.createElement('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
-                      React.createElement('button', { key: 'r', type: 'button', style: styles.button, onClick: loadHistory, 'aria-label': t('retry') }, t('retry'))
+                ? el(Card, { key: 'rev-err', title: t('reviewUnavailable'), badge: t('stateBroken'), state: 'broken' }, [
+                    el('div', { key: 'm' }, history.error?.message ?? 'unknown error'),
+                    el('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
+                      el('button', { key: 'r', type: 'button', style: styles.button, onClick: loadHistory, 'aria-label': t('retry') }, t('retry'))
                     ])
                   ])
-                : React.createElement(ReviewTimeline, { key: 'rev', timeline: history.data, t })))
+                : el(ReviewTimeline, { key: 'rev', timeline: history.data, t })))
 
       return shell([reviewButton], [
-        React.createElement('div', { key: 'body', style: styles.detailBody }, [
+        el('div', { key: 'body', style: styles.detailBody }, [
           reviewSection,
-          React.createElement('div', { key: 'title', style: styles.header }, [
-            React.createElement('h3', { key: 'n', style: { ...styles.title, margin: 0 } }, task.name ?? '—'),
-            React.createElement('span', {
+          el('div', { key: 'title', style: styles.header }, [
+            el('h3', { key: 'n', style: { ...styles.title, margin: 0 } }, task.name ?? '—'),
+            el('span', {
               key: 's',
               style: { ...styles.statusTag, color: STATUS_TOKEN[task.status] ?? TOKEN.labelTertiary }
-            }, [React.createElement('span', { key: 'd', style: styles.chipDot }), React.createElement('span', { key: 'l' }, task.status ?? '—')])
+            }, [el('span', { key: 'd', style: styles.chipDot }), el('span', { key: 'l' }, task.status ?? '—')])
           ]),
-          React.createElement('div', { key: 'id', style: styles.mono }, task.id ?? taskId),
-          task.inState === false ? React.createElement('div', { key: 'w1', style: { ...styles.note, padding: '4px 0 0' } }, t('dDefinitionOnly')) : null,
-          task.inDefinition === false ? React.createElement('div', { key: 'w2', style: { ...styles.note, padding: '4px 0 0' } }, t('dStateOnly')) : null,
+          el('div', { key: 'id', style: styles.mono }, task.id ?? taskId),
+          task.inState === false ? el('div', { key: 'w1', style: { ...styles.note, padding: '4px 0 0' } }, t('dDefinitionOnly')) : null,
+          task.inDefinition === false ? el('div', { key: 'w2', style: { ...styles.note, padding: '4px 0 0' } }, t('dStateOnly')) : null,
 
-          React.createElement('h4', { key: 'h-brief', style: styles.h4 }, t('dBrief')),
-          React.createElement('div', { key: 'brief', style: styles.mono }, task.brief ?? t('dNoData')),
+          el('h4', { key: 'h-brief', style: styles.h4 }, t('dBrief')),
+          el('div', { key: 'brief', style: styles.mono }, task.brief ?? t('dNoData')),
 
-          React.createElement('div', { key: 'grid', style: { ...styles.grid, marginTop: 8 } }, [
-            React.createElement(Row, { key: 'mod', label: t('dModule') }, task.module ?? '—'),
-            React.createElement(Row, { key: 'mr', label: t('dModuleRole') }, task.moduleRole ?? '—'),
-            React.createElement(Row, { key: 'imp', label: t('dImportance') }, `${task.importance ?? '—'}`),
-            React.createElement(Row, { key: 'impd', label: t('dImportanceDerived') }, `${task.importanceDerived ?? '—'}`),
-            React.createElement(Row, { key: 'diff', label: t('dDifficulty') }, task.difficulty ?? '—'),
-            React.createElement(Row, { key: 'hours', label: t('dEstimatedHours') }, task.estimatedHours === null || task.estimatedHours === undefined ? '—' : String(task.estimatedHours)),
-            React.createElement(Row, { key: 'claim', label: t('dClaimedBy') }, task.claimedBy ?? '—'),
-            React.createElement(Row, { key: 'att', label: t('dAttempts') }, task.attemptCount === null || task.attemptCount === undefined ? '—' : String(task.attemptCount)),
-            React.createElement(Row, { key: 'phase', label: t('dReviewPhase') }, task.reviewPhase ?? '—'),
-            React.createElement(Row, { key: 'src', label: t('dSource') }, task.source ?? '—'),
-            React.createElement(Row, { key: 'ds', label: t('dDownstreamCount') }, Array.isArray(task.dependents) ? String(task.dependents.length) : '—')
+          el('div', { key: 'grid', style: { ...styles.grid, marginTop: 8 } }, [
+            el(Row, { key: 'mod', label: t('dModule') }, task.module ?? '—'),
+            el(Row, { key: 'mr', label: t('dModuleRole') }, task.moduleRole ?? '—'),
+            el(Row, { key: 'imp', label: t('dImportance') }, `${task.importance ?? '—'}`),
+            el(Row, { key: 'impd', label: t('dImportanceDerived') }, `${task.importanceDerived ?? '—'}`),
+            el(Row, { key: 'diff', label: t('dDifficulty') }, task.difficulty ?? '—'),
+            el(Row, { key: 'hours', label: t('dEstimatedHours') }, task.estimatedHours === null || task.estimatedHours === undefined ? '—' : String(task.estimatedHours)),
+            el(Row, { key: 'claim', label: t('dClaimedBy') }, task.claimedBy ?? '—'),
+            el(Row, { key: 'att', label: t('dAttempts') }, task.attemptCount === null || task.attemptCount === undefined ? '—' : String(task.attemptCount)),
+            el(Row, { key: 'phase', label: t('dReviewPhase') }, task.reviewPhase ?? '—'),
+            el(Row, { key: 'src', label: t('dSource') }, task.source ?? '—'),
+            el(Row, { key: 'ds', label: t('dDownstreamCount') }, Array.isArray(task.dependents) ? String(task.dependents.length) : '—')
           ]),
 
           // v3 两组（§4）：11 行网格后、AC 前；整组无字段则不出标题
           detailGroup('design', t('dDesignGroup'), designBindingRows(task, t), t),
           detailGroup('time', t('dTimeGroup'), timeGroupRows(task, t), t),
 
-          React.createElement('h4', { key: 'h-ac', style: styles.h4 }, `${t('dAcceptance')}（${(task.acceptanceCriteria ?? []).length}）`),
+          el('h4', { key: 'h-ac', style: styles.h4 }, `${t('dAcceptance')}（${(task.acceptanceCriteria ?? []).length}）`),
           (task.acceptanceCriteria ?? []).length === 0
-            ? React.createElement('div', { key: 'ac-empty', style: styles.mono }, t('dNoData'))
-            : React.createElement('ol', { key: 'ac', style: styles.ul }, (task.acceptanceCriteria ?? []).map((item, index) =>
-                React.createElement('li', { key: index, style: styles.li }, item))),
+            ? el('div', { key: 'ac-empty', style: styles.mono }, t('dNoData'))
+            : el('ol', { key: 'ac', style: styles.ul }, (task.acceptanceCriteria ?? []).map((item, index) =>
+                el('li', { key: index, style: styles.li }, item))),
 
           // FR-6.3：验证命令要「等宽字体 + 可复制」——等宽 <pre> 之外必须有显式复制入口
-          task.verifyCommand === null || task.verifyCommand === undefined ? null : React.createElement(React.Fragment, { key: 'verify' }, [
-            React.createElement(SectionHead, {
+          task.verifyCommand === null || task.verifyCommand === undefined ? null : el(React.Fragment, { key: 'verify' }, [
+            el(SectionHead, {
               key: 'h',
               label: t('dVerify'),
-              action: React.createElement(CopyButton, { key: 'c', text: task.verifyCommand, t, label: t('copyText') })
+              action: el(CopyButton, { key: 'c', text: task.verifyCommand, t, label: t('copyText') })
             }),
-            React.createElement('pre', { key: 'v', style: styles.codeBlock }, task.verifyCommand)
+            el('pre', { key: 'v', style: styles.codeBlock }, task.verifyCommand)
           ]),
           task.verifyTimeoutSeconds === null || task.verifyTimeoutSeconds === undefined
             ? null
-            : React.createElement('div', { key: 'vt', style: styles.mono }, `${t('dVerifyTimeout')}: ${task.verifyTimeoutSeconds}s`),
+            : el('div', { key: 'vt', style: styles.mono }, `${t('dVerifyTimeout')}: ${task.verifyTimeoutSeconds}s`),
 
-          React.createElement('div', { key: 'files', style: { marginTop: 4 } }, section(t('dFilesToEdit'), task.filesToEdit)),
-          (task.exemptFiles ?? []).length === 0 ? null : React.createElement('div', { key: 'exempt' }, section(t('dExemptFiles'), task.exemptFiles)),
-          React.createElement('div', { key: 'deps', style: { marginTop: 4 } }, section(t('dDependsOn'), task.dependsOn, true)),
-          React.createElement('div', { key: 'dents' }, section(t('dDependents'), task.dependents, true)),
-          (task.requires ?? []).length === 0 ? null : React.createElement('div', { key: 'req' }, section(t('dRequires'), task.requires)),
-          (task.reviewers ?? []).length === 0 ? null : React.createElement('div', { key: 'rev' }, section(t('dReviewers'), task.reviewers)),
+          el('div', { key: 'files', style: { marginTop: 4 } }, section(t('dFilesToEdit'), task.filesToEdit)),
+          (task.exemptFiles ?? []).length === 0 ? null : el('div', { key: 'exempt' }, section(t('dExemptFiles'), task.exemptFiles)),
+          el('div', { key: 'deps', style: { marginTop: 4 } }, section(t('dDependsOn'), task.dependsOn, true)),
+          el('div', { key: 'dents' }, section(t('dDependents'), task.dependents, true)),
+          (task.requires ?? []).length === 0 ? null : el('div', { key: 'req' }, section(t('dRequires'), task.requires)),
+          (task.reviewers ?? []).length === 0 ? null : el('div', { key: 'rev' }, section(t('dReviewers'), task.reviewers)),
           task.requireIndependentReview === true
-            ? React.createElement('div', { key: 'ind', style: styles.mono }, t('dIndependentReview'))
+            ? el('div', { key: 'ind', style: styles.mono }, t('dIndependentReview'))
             : null
         ].filter(Boolean))
       ])
@@ -1724,10 +1686,8 @@ window.__ModuleLoader__.load({
 
     // ── FR-7 依赖图（P2b）──────────────────────────────────────────────────
     /**
-     * 图节点的固定尺寸（自绘，没有布局库可用：平台 seed 表只有 9 个模块，NFR-4.1）。
-     *
-     * 布局取向是**纵向分层、层内横向排列**——右侧栏只有整页约 1/3 宽，横向铺开的图
-     * 在窄栏里没法读；纵向分层天然对应「先决在上、后继在下」，也贴合依赖的方向。
+     * 图节点固定尺寸（自绘，无布局库可用）。布局是纵向分层、层内横排——右侧栏窄，横向铺开读不了；
+     * 纵向分层也贴合「先决在上、后继在下」。
      */
     const GRAPH_NODE_W = 128
     const GRAPH_NODE_H = 40
@@ -1776,8 +1736,8 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 分层布局（纯函数）：按服务端最长依赖深度 level 分行；level===null（环上/算不出层级）排最后一行，不硬塞层级。
-     * @param {object} data `/orchd/api/graph` 的 `data`
+     * 分层布局（纯函数）：按服务端 level 分行；level===null（环上/算不出）排最后一行，不硬塞层级。
+     * @param {object} data /orchd/api/graph 的 data
      */
     function layoutDependencyGraph(data, options) {
       const nodes = Array.isArray(data?.nodes) ? data.nodes : []
@@ -1812,9 +1772,7 @@ window.__ModuleLoader__.load({
       return typeof node?.name === 'string' && node.name !== '' ? node.name : (node?.id ?? '—')
     }
 
-    /**
-     * 文本宽度（半角单位；全角/宽字符算 2）：节点框固定 128px，按字符数截断会溢出，必须按宽度折算。
-     */
+    /** 文本宽度（半角单位，全角算 2）：节点框固定 128px，按字符数截断会溢出，必须按宽度折算。 */
     function graphTextUnits(value) {
       // 全角/宽字符的码点区间（CJK 汉字、假名、谚文、全角标点等）
       return [...String(value ?? '')].reduce((units, char) =>
@@ -1985,13 +1943,7 @@ window.__ModuleLoader__.load({
       return 'blocks'
     }
 
-    /**
-     * 依赖图视图（FR-7 / FR-14）：只做派生 + 组合；数据与投影由服务端算好，前端不猜算（FR-7.5）。
-     * R20：三种镜头 + 经典视图共用同一 SVG 绘制点与布局纯函数，经典视图必然是现行渲染原样（FR-14.9）。
-     */
-    // 渲染别名（等价 React.createElement）
-    const el = React.createElement
-
+    /** 依赖图视图（FR-7 / FR-14）：只做派生 + 组合，数据与投影由服务端算好；三镜头与经典视图共用同一 SVG 绘制点（R20 / FR-14.9）。 */
     // 依赖图子组件（R20：经典视图与镜头视图共用同一 SVG 绘制点与布局纯函数）
 
     // 镜头切换器：只列服务端标 available 的镜头，顺序由 GRAPH_LENS_ORDER 钉死
@@ -2144,11 +2096,30 @@ window.__ModuleLoader__.load({
       ])
     }
 
-    // 空态：**也必须带上工具条**（提示语让用户去开「含终态任务」，开关就在工具条里）
-    function GraphEmptyState({ t, counts }) {
+    // 空态：说明 + 工具条提示 + 两个原生 button 动作（§14.3）；键盘可达性交给浏览器。
+    function GraphEmptyState({ t, counts, includeTerminal, onToggleTerminal, onOpenList }) {
+      const hidden = counts.hiddenTerminal ?? 0
       return el('div', { 'data-orchd-graph-empty': 'true', style: { flex: '1 1 auto', minHeight: 0 } }, [
         el('div', { key: 'n', style: styles.note }, t('graphEmptyActive')),
-        el('div', { key: 'h', style: styles.note }, t('graphEmptyActiveHint').replace('{n}', String(counts.hiddenTerminal ?? 0)))
+        el('div', { key: 'h', style: styles.note }, t('graphEmptyActiveHint').replace('{n}', String(hidden))),
+        el('div', { key: 'a', style: { ...styles.note, display: 'flex', gap: 6, flexWrap: 'wrap' } }, [
+          includeTerminal !== true && hidden > 0
+            ? el('button', {
+                key: 'st',
+                type: 'button',
+                style: styles.button,
+                'data-orchd-graph-empty-action': 'show-terminal',
+                onClick: () => onToggleTerminal(true)
+              }, t('graphEmptyShowTerminal').replace('{n}', String(hidden)))
+            : null,
+          el('button', {
+            key: 'ol',
+            type: 'button',
+            style: styles.button,
+            'data-orchd-graph-empty-action': 'open-list',
+            onClick: () => onOpenList()
+          }, t('graphEmptyOpenList'))
+        ].filter(Boolean))
       ])
     }
 
@@ -2371,11 +2342,10 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * 依赖图面板：只做「派生 + 组合」。
-     * - 布局/投影都在服务端或纯函数里算好，这里不重排、不重算（R20：经典视图与镜头视图共用同一组纯函数）；
-     * - 经典视图恒为 chain 并隐藏切换器（FR-14.9），渲染结构不变 = 无功能回退。
+     * 依赖图面板：只做派生 + 组合——布局/投影都在服务端或纯函数里算好，这里不重排不重算；
+     * 经典视图恒为 chain 并隐藏切换器（FR-14.9），渲染结构不变。
      */
-    function DependencyGraph({ data, t, onOpenTask, onFocus, onBackToAll, includeTerminal, onToggleTerminal, classic, onToggleClassic, onSelectLens, umbrella, onSelectUmbrella }) {
+    function DependencyGraph({ data, t, onOpenTask, onFocus, onBackToAll, includeTerminal, onToggleTerminal, onOpenList, classic, onToggleClassic, onSelectLens, umbrella, onSelectUmbrella }) {
       const nodes = Array.isArray(data?.nodes) ? data.nodes : []
       const counts = data?.counts ?? {}
       const focusInfo = data?.focus ?? null
@@ -2435,7 +2405,7 @@ window.__ModuleLoader__.load({
       }, critical.text)
       const legend = el(GraphLegend, { key: 'legend', t, rows: legendRows })
       const focusBar = el(GraphFocusBar, { key: 'focus', t, focusId, focusInfo, onOpenTask })
-      const emptyBlock = React.createElement(GraphEmptyState, { key: 'empty', t, counts })
+      const emptyBlock = el(GraphEmptyState, { key: 'empty', t, counts, includeTerminal, onToggleTerminal, onOpenList })
       return el('div', {
         key: 'graph',
         style: { display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 },
@@ -2469,23 +2439,15 @@ window.__ModuleLoader__.load({
 
     // ── FR-13 想法看板 ────────────────────────────────────────────────────
     /**
-     * 想法展示桶顺序（4 个引擎状态 + 派生桶 `converted`）。
-     * 统计条**固定**展示这些（0 值可点），这样三分区在界面上闭合：
-     *   `全部 = 活跃 + 已转任务 + 已覆盖`（活跃 = 论证中 + 待补充 + 待拆解）。
-     * 集合以宿主下发的 `activeStatuses` 为准，这里只是同源兜底。
-     *
-     * 引擎 2026-10-23 调整：`taskified` 正名为 `covered`（撞车并入已有任务、待归档），
-     * `dropped` 从活跃台账下线（放弃改走 `idea close --reason`）。`converted` 是
-     * **派生桶**（任务定义层 source/additional_sources 指向该想法），不是引擎状态。
+     * 想法展示桶顺序（4 个引擎状态 + 派生桶 converted）：统计条固定展示、0 值可点，三分区闭合。
+     * 集合以宿主下发的 activeStatuses 为准。引擎 2026-10-23：taskified 正名 covered、dropped 下线；
+     * converted 是按定义层溯源派生的展示桶，不是引擎状态。
      */
     const IDEA_STATUSES_UI = ['study', 'questioning', 'pending', 'converted', 'covered']
 
     /**
-     * 想法展示桶 → i18n 键。
-     *
-     * ⚠ 前 4 个是**引擎定义的**（`study` / `questioning` / `pending` / `covered`），
-     * 不得自造；`converted` 是本插件按定义层溯源派生的展示桶。引擎将来加了新状态时
-     * 解析层会把 `status` 置 null 并保留原文，这里显示「未知状态 + 原文」，不崩、不猜。
+     * 想法展示桶 → i18n 键：前 4 个是引擎定义的（study / questioning / pending / covered）不得自造；
+     * 未知状态置 null 并保留原文，显示「未知状态 + 原文」，不崩不猜。
      */
     const IDEA_STATUS_I18N = {
       study: 'iStudy',
@@ -2527,12 +2489,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    /**
-     * 想法列表（FR-13.1/13.3/13.4）。
-     *
-     * 与任务列表用**同一套**状态条筛选组件（FR-13.6），只是标签换成想法展示桶；
-     * 徽章数在调用方（视图切换）显示，这里不重复。
-     */
+    /** 想法列表：与任务列表同一套状态条筛选（FR-13.6），徽章数在调用方显示。 */
     function IdeasBoard({ data, filters, setFilters, t, onOpen }) {
       const entries = data?.entries ?? []
       const counts = data?.counts?.byStatus ?? {}
@@ -2577,18 +2534,18 @@ window.__ModuleLoader__.load({
         ? `${t('ideasEmptyFiltered')}${t(IDEA_STATUS_I18N[filters.mode] ?? 'ideasStatusUnknown')}`
         : (filters.keyword !== '' ? t('ideasEmptyKeyword').replace('{kw}', filters.keyword) : t('ideasEmpty'))
 
-      return React.createElement(React.Fragment, null, [
+      return el(React.Fragment, null, [
         // 引擎没有 `ideas` 子命令（旧版本，实测 v1.5.0）时**显式说明**：
         // 这时列表与状态只来自 IDEAS.md 直读，没有引擎清单可交叉核对。
         // 不能装成正常，也不能报成「状态异常」——那不是项目坏了（用户实测反馈）。
         data?.unsupported === true
-          ? React.createElement('div', {
+          ? el('div', {
               key: 'unsupported',
               'data-orchd-ideas-unsupported': String(data.unsupportedHint ?? 'true'),
               style: { ...styles.note, padding: '0 14px 8px', color: WARN }
             }, t('ideasEngineUnsupported'))
           : null,
-        React.createElement(StatusStripFilter, {
+        el(StatusStripFilter, {
           key: 'strip',
           summary: summaryForStrip,
           counts,
@@ -2598,8 +2555,8 @@ window.__ModuleLoader__.load({
           unitKey: (status) => IDEA_STATUS_I18N[status] ?? 'ideasStatusUnknown',
           t
         }),
-        React.createElement('div', { key: 'controls', style: styles.controls }, [
-          React.createElement('input', {
+        el('div', { key: 'controls', style: styles.controls }, [
+          el('input', {
             key: 'search',
             type: 'search',
             value: filters.keyword,
@@ -2608,11 +2565,11 @@ window.__ModuleLoader__.load({
             style: styles.input,
             onChange: (event) => setFilters({ ...filters, keyword: event.target.value })
           }),
-          React.createElement('div', { key: 'row', style: styles.controlRow }, [
+          el('div', { key: 'row', style: styles.controlRow }, [
             // 归档分组：**与任务池对照**得出（FR-13.7），不是归档件里的字面 status——
             // 引擎明确归档不改写 status（语义是「已消费」），按字面算会把 287 条已立任务的
             // 条目全说成「待拆解」。四项与总数闭合（含「无 id 无法对照」）。
-            React.createElement('span', {
+            el('span', {
               key: 'arch',
               style: { ...styles.chip, color: TOKEN.labelTertiary },
               title: `${t('ideasArchivedHint')}。${t('ideasArchivedHistorical')}`,
@@ -2627,7 +2584,7 @@ window.__ModuleLoader__.load({
                     `${t('ideasNoId')} ${archived.noId ?? 0}`
                   ].join(' · ')}）`),
             (filters.mode !== 'all' || filters.keyword !== '')
-              ? React.createElement('button', {
+              ? el('button', {
                   key: 'clear', type: 'button', style: styles.chipButton, 'aria-label': t('clearFilters'),
                   'data-orchd-chip-clear': 'true',
                   onClick: () => setFilters({ mode: 'all', keyword: '' })
@@ -2635,18 +2592,18 @@ window.__ModuleLoader__.load({
               : null
           ].filter(Boolean))
         ]),
-        React.createElement('div', { key: 'count', style: styles.note },
+        el('div', { key: 'count', style: styles.note },
           `${t('countShown')} ${filtered.length} / ${entries.length} ${t('countUnit')}`),
         filtered.length === 0
-          ? React.createElement('div', { key: 'empty', style: styles.note, 'data-orchd-empty': 'ideas' }, [
-              React.createElement('div', { key: 't' }, emptyText),
+          ? el('div', { key: 'empty', style: styles.note, 'data-orchd-empty': 'ideas' }, [
+              el('div', { key: 't' }, emptyText),
               // 「没有想法」时才给「新建想法」命令——这是全面板**唯一**需要占位符的地方
               // （新建的条目还没有 id，标题里得自己声明一个）。FR-13.8。
               filters.mode === 'all' && (filters.keyword ?? '') === ''
-                ? React.createElement('div', { key: 'propose', style: { marginTop: 8 } }, [
-                    React.createElement('div', { key: 'h', style: { fontWeight: 600, marginBottom: 4 } }, t('ideasPropose')),
-                    React.createElement('div', { key: 'hint', style: { marginBottom: 4 } }, t('ideasProposeHint')),
-                    React.createElement(CommandBlock, {
+                ? el('div', { key: 'propose', style: { marginTop: 8 } }, [
+                    el('div', { key: 'h', style: { fontWeight: 600, marginBottom: 4 } }, t('ideasPropose')),
+                    el('div', { key: 'hint', style: { marginBottom: 4 } }, t('ideasProposeHint')),
+                    el(CommandBlock, {
                       key: 'cmd',
                       text: 'python .orchd/__main__.py idea propose --title "<标题>（id: my-idea）" --feasibility "<可行性论证>"',
                       t
@@ -2654,12 +2611,12 @@ window.__ModuleLoader__.load({
                   ])
                 : null
             ])
-          : React.createElement(VirtualList, {
+          : el(VirtualList, {
               key: 'list',
               rows: filtered,
               rowHeight: IDEA_ROW_HEIGHT,
               label: t('ideasScrollLabel'),
-              renderRow: (entry, index, offset) => React.createElement(IdeaRowItem, {
+              renderRow: (entry, index, offset) => el(IdeaRowItem, {
                 key: entry.id ?? String(index),
                 entry,
                 t,
@@ -2672,64 +2629,57 @@ window.__ModuleLoader__.load({
 
     /** 想法行（复用任务行的虚拟化与自绘滚动条，只是内容不同）。 */
     function IdeaRowItem({ entry, t, offset, onOpen }) {
-      return React.createElement('button', {
+      return el('button', {
         type: 'button',
         style: { ...styles.rowStyle, top: offset, height: IDEA_ROW_HEIGHT },
         onClick: () => onOpen(entry),
         'data-orchd-idea': entry.id ?? '',
         'aria-label': `${entry.id ?? ''} ${entry.title ?? ''}`.trim()
       }, [
-        React.createElement('span', { key: 't', style: styles.rowTitle }, [
-          React.createElement('span', { key: 'd', style: { ...styles.rowId, maxWidth: '30%' } }, entry.date ?? '—'),
-          React.createElement('span', { key: 'n', style: styles.rowName }, entry.title ?? '—')
+        el('span', { key: 't', style: styles.rowTitle }, [
+          el('span', { key: 'd', style: { ...styles.rowId, maxWidth: '30%' } }, entry.date ?? '—'),
+          el('span', { key: 'n', style: styles.rowName }, entry.title ?? '—')
         ]),
-        React.createElement('span', { key: 'm', style: styles.rowMeta }, [
-          React.createElement('span', { key: 's', style: { ...styles.statusTag, color: ideaOwnerToken(entry.owner) } }, [
-            React.createElement('span', { key: 'dd', style: styles.chipDot }),
-            React.createElement('span', { key: 'l' }, ideaStatusText(entry, t)),
-            React.createElement('span', { key: 'o' }, ` · ${ideaOwnerText(entry.owner, t)}`)
+        el('span', { key: 'm', style: styles.rowMeta }, [
+          el('span', { key: 's', style: { ...styles.statusTag, color: ideaOwnerToken(entry.owner) } }, [
+            el('span', { key: 'dd', style: styles.chipDot }),
+            el('span', { key: 'l' }, ideaStatusText(entry, t)),
+            el('span', { key: 'o' }, ` · ${ideaOwnerText(entry.owner, t)}`)
           ]),
           // 已转任务：由定义层溯源推出（status 只表达摄入/裁决态，不表达「已立任务」），顺带给出任务数量
           (entry.convertedTasks ?? []).length === 0
             ? null
-            : React.createElement('span', { key: 'conv', 'data-orchd-idea-converted': String(entry.convertedTasks.length) },
+            : el('span', { key: 'conv', 'data-orchd-idea-converted': String(entry.convertedTasks.length) },
                 `${entry.convertedTasks.length} ${t('ideasConvertedTasks')}`),
-          entry.degraded ? React.createElement('span', { key: 'g', style: { color: WARN } }, `⚠ ${t('ideasDegraded')}`) : null,
+          entry.degraded ? el('span', { key: 'g', style: { color: WARN } }, `⚠ ${t('ideasDegraded')}`) : null,
           entry.engineTitle === null || entry.engineTitle === undefined
-            ? React.createElement('span', { key: 'only', style: { color: TOKEN.labelTertiary } }, t('ideasOnlyInMarkdown'))
+            ? el('span', { key: 'only', style: { color: TOKEN.labelTertiary } }, t('ideasOnlyInMarkdown'))
             : null
         ].filter(Boolean))
       ])
     }
 
-    /**
-     * 想法详情（FR-13.5）：goal / idea / 论证 / detail / notes + **未知字段原样展示**。
-     * 只读：没有任何 propose / confirm / drop 按钮，只提供复制命令（FR-13.8）。
-     */
+    /** 想法详情（FR-13.5）：goal / idea / 论证 / detail / notes + 未知字段原样展示；只读，只给复制命令（FR-13.8）。 */
     function IdeaDetail({ entry, t, onBack }) {
       if (entry === null || entry === undefined) return null
-      /**
-       * 一个字段段落。
-       * `copyable=true` 时在标题右侧加复制按钮——AC-13.4 明确要求「详档路径**可复制**」，
-       * 只把路径当纯文本展示不算满足。
-       */
+      /** 一个字段段落；copyable=true 时标题右侧加复制按钮（AC-13.4 要求详档路径可复制）。 */
       const section = (label, value, key, copyable = false) => (value === null || value === undefined || value === ''
         ? null
-        : React.createElement(React.Fragment, { key }, [
+        : el(React.Fragment, { key }, [
             copyable
-              ? React.createElement(SectionHead, {
+              ? el(SectionHead, {
                   key: 'h',
                   label,
-                  action: React.createElement(CopyButton, { key: 'c', text: value, t, label: t('copyText') })
+                  action: el(CopyButton, { key: 'c', text: value, t, label: t('copyText') })
                 })
-              : React.createElement('h4', { key: 'h', style: styles.h4 }, label),
-            React.createElement('div', { key: 'v', style: styles.mono }, value)
+              : el('h4', { key: 'h', style: styles.h4 }, label),
+            el('div', { key: 'v', style: styles.mono }, value)
           ]))
       const list = (label, values, key) => (Array.isArray(values) && values.length > 0
-        ? React.createElement(React.Fragment, { key }, [
-            React.createElement('h4', { key: 'h', style: styles.h4 }, label),
-            React.createElement('ul', { key: 'u', style: styles.ul }, values.map((value, index) =>
-              React.createElement('li', { key: index, style: styles.li }, value)))
+        ? el(React.Fragment, { key }, [
+            el('h4', { key: 'h', style: styles.h4 }, label),
+            el('ul', { key: 'u', style: styles.ul }, values.map((value, index) =>
+              el('li', { key: index, style: styles.li }, value)))
           ])
         : null)
 
@@ -2737,50 +2687,50 @@ window.__ModuleLoader__.load({
 
       // 与任务详情**同一套骨架**：固定条（返回，不随正文滚动）+ ScrollPane 正文
       // （可见的自绘滚动条；原来这里只有隐藏的原生条，等于没有滚动条）。
-      return React.createElement('div', { style: styles.detailPage }, [
-        React.createElement('div', { key: 'bar', style: styles.detailBar }, [
-          React.createElement('button', {
+      return el('div', { style: styles.detailPage }, [
+        el('div', { key: 'bar', style: styles.detailBar }, [
+          el('button', {
             key: 'back', type: 'button', style: styles.button, onClick: onBack, 'aria-label': t('back')
           }, `← ${t('back')}`),
-          React.createElement('span', { key: 'sp', style: styles.spacer })
+          el('span', { key: 'sp', style: styles.spacer })
         ]),
-        React.createElement(ScrollPane, {
+        el(ScrollPane, {
           key: 'pane',
           label: t('ideasDetailScrollLabel'),
           scrollerStyle: styles.detailScroll,
           contentStyle: styles.detailBody,
           children: [
-            React.createElement('div', { key: 'title', style: styles.header }, [
-            React.createElement('h3', { key: 'n', style: { ...styles.title, margin: 0 } }, entry.title ?? '—'),
-            React.createElement('span', {
+            el('div', { key: 'title', style: styles.header }, [
+            el('h3', { key: 'n', style: { ...styles.title, margin: 0 } }, entry.title ?? '—'),
+            el('span', {
               key: 's',
               style: { ...styles.statusTag, color: ideaOwnerToken(entry.owner) }
             }, [
-              React.createElement('span', { key: 'd', style: styles.chipDot }),
-              React.createElement('span', { key: 'l' }, ideaStatusText(entry, t)),
-              React.createElement('span', { key: 'o' }, ` · ${ideaOwnerText(entry.owner, t)}`)
+              el('span', { key: 'd', style: styles.chipDot }),
+              el('span', { key: 'l' }, ideaStatusText(entry, t)),
+              el('span', { key: 'o' }, ` · ${ideaOwnerText(entry.owner, t)}`)
             ])
           ]),
-          React.createElement('div', { key: 'id', style: styles.mono },
+          el('div', { key: 'id', style: styles.mono },
             `${entry.id ?? '—'}${entry.date === null ? '' : ` · ${entry.date}`}`),
           entry.degraded
-            ? React.createElement('div', { key: 'degraded', style: { ...styles.note, padding: '4px 0 0' } }, `⚠ ${t('ideasDegraded')}`)
+            ? el('div', { key: 'degraded', style: { ...styles.note, padding: '4px 0 0' } }, `⚠ ${t('ideasDegraded')}`)
             : null,
           entry.engineTitle === null || entry.engineTitle === undefined
-            ? React.createElement('div', { key: 'only', style: { ...styles.note, padding: '4px 0 0' } }, t('ideasOnlyInMarkdown'))
+            ? el('div', { key: 'only', style: { ...styles.note, padding: '4px 0 0' } }, t('ideasOnlyInMarkdown'))
             : null,
           // 已转任务（AC-13.12）：定义层溯源出的任务 id 一并展示，说明这条想法去了哪
           (entry.convertedTasks ?? []).length === 0
             ? null
-            : React.createElement('div', { key: 'converted' }, [
-                React.createElement('h4', { key: 'h', style: styles.h4 }, `${t('ideasConverted')}（${entry.convertedTasks.length}）`),
-                React.createElement(SectionHead, {
+            : el('div', { key: 'converted' }, [
+                el('h4', { key: 'h', style: styles.h4 }, `${t('ideasConverted')}（${entry.convertedTasks.length}）`),
+                el(SectionHead, {
                   key: 'head',
                   label: t('ideasConvertedHint'),
-                  action: React.createElement(CopyButton, { key: 'c', text: entry.convertedTasks.join('\n'), t, label: t('copyText') })
+                  action: el(CopyButton, { key: 'c', text: entry.convertedTasks.join('\n'), t, label: t('copyText') })
                 }),
-                React.createElement('ul', { key: 'u', style: styles.ul }, entry.convertedTasks.map((id) =>
-                  React.createElement('li', { key: id, style: { ...styles.li, fontFamily: TOKEN.mono } }, id)))
+                el('ul', { key: 'u', style: styles.ul }, entry.convertedTasks.map((id) =>
+                  el('li', { key: id, style: { ...styles.li, fontFamily: TOKEN.mono } }, id)))
               ]),
 
           section(t('dBrief'), entry.goal, 'goal'),
@@ -2792,40 +2742,33 @@ window.__ModuleLoader__.load({
           // FR-13.5：**未知字段原样展示**（字段集合会演进，不能用白名单丢掉）
           extraKeys.length === 0
             ? null
-            : React.createElement('div', { key: 'extra' }, [
-                React.createElement('h4', { key: 'h', style: styles.h4 }, t('ideasExtra')),
-                React.createElement('div', { key: 'g', style: styles.grid }, extraKeys.flatMap((key) =>
-                  React.createElement(Row, { key, label: key }, String(entry.extra[key]))))
+            : el('div', { key: 'extra' }, [
+                el('h4', { key: 'h', style: styles.h4 }, t('ideasExtra')),
+                el('div', { key: 'g', style: styles.grid }, extraKeys.flatMap((key) =>
+                  el(Row, { key, label: key }, String(entry.extra[key]))))
               ]),
 
           // 只读：只复制命令，不提供任何写操作按钮（FR-13.8）。
           // ⚠ 命令里的 id **必须替换成该条目的真实 id**（用户实测反馈：留 `<标题>` 占位符
           // 粘过去还得手改）。而且要给**当前状态真正能跑**的命令，不能一律给 propose——
           // `idea propose` 是「新建一条想法」，对已存在的条目没有意义。
-          React.createElement('h4', { key: 'h-cmd', style: styles.h4 }, t('ideasCommands')),
-          React.createElement('div', { key: 'hint', style: { ...styles.note, padding: 0 } }, t('ideasCommandsHint')),
+          el('h4', { key: 'h-cmd', style: styles.h4 }, t('ideasCommands')),
+          el('div', { key: 'hint', style: { ...styles.note, padding: 0 } }, t('ideasCommandsHint')),
           // 用户实测提问「这条命令是干什么的？引号内是我的 idea 内容吗？」——把每条命令的
           // 语义与占位符含义写在命令上方，省得再去猜（FR-13.8b）
-          React.createElement('div', { key: 'legend', style: { ...styles.note, padding: '4px 0 0' } }, t('ideasCommandLegend')),
+          el('div', { key: 'legend', style: { ...styles.note, padding: '4px 0 0' } }, t('ideasCommandLegend')),
           ...ideaCommandsFor(entry).map((command) =>
-            React.createElement(CommandBlock, { key: `cmd-${command.key}`, text: command.text, t }))
+            el(CommandBlock, { key: `cmd-${command.key}`, text: command.text, t }))
         ].filter(Boolean)
         })
       ])
     }
 
     /**
-     * 某条想法当下可执行的**仅用户**命令（FR-13.8），id 已替换好。
-     *
-     * 命令形态来自引擎实测（`orchd idea <c> --help`）：
-     *   `append --id <id> --notes …`（按 `- id:` 精确值定位）
-     *   `confirm --title <title>`、`close --title <title> --reason …`
-     *   —— 后两者的 `--title` 支持「裸 slug」，而裸 slug 与 `- id:` 精确相等，故直接用 id。
-     *
-     * 引擎 2026-10-23 起人工离场出口统一为 `idea close --reason`（旧 drop / archive 已下线）：
-     * study/questioning/pending/covered 全部走 close；`study` 另给 confirm（升 pending）。
-     * 在途任务引用期间引擎会拒绝搬走（`source_live_reference`），这是引擎的守卫，不是错误。
-     * 判定用**字面 status**（`converted` 的条目字面仍是 pending）。
+     * 某条想法当下可执行的仅用户命令（FR-13.8），id 已替换好。命令形态取自引擎实测 --help：
+     * append --id / confirm --title / close --title --reason（后两者裸 slug 与 - id: 精确相等，故直接用 id）。
+     * 2026-10-23 起离场出口统一为 idea close --reason（drop / archive 已下线）；在途任务引用期间引擎会拒绝搬走
+     * （source_live_reference，是守卫不是错误）。判定用字面 status（converted 的条目字面仍是 pending）。
      */
     function ideaCommandsFor(entry) {
       const id = typeof entry.id === 'string' && entry.id !== '' ? entry.id : null
@@ -2870,6 +2813,12 @@ window.__ModuleLoader__.load({
       // mode 是**单选**筛选模式（'all' | 'active' | 具体状态），见 applyFilters（FR-5.2）
       const [filters, setFilters] = React.useState({ keyword: '', mode: 'all', modules: [], sortBy: 'default' })
       const [ideaFilters, setIdeaFilters] = React.useState({ keyword: '', mode: 'all' })
+      // §14.3 空态动作「切到列表」：回列表并清掉只看活跃/状态的筛选（保留关键词/排序/模块），
+      // 否则切过去仍看不到归档任务，等于什么都没做。
+      const openList = () => {
+        setView('list')
+        setFilters((previous) => ({ ...previous, mode: 'all' }))
+      }
       // 每会话记忆（FR-12.2）：视图与筛选状态按 sessionId 隔离保存，切走再切回可恢复
       const sessionMemory = React.useRef(new Map())
 
@@ -3036,23 +2985,23 @@ window.__ModuleLoader__.load({
       const data = context.data
       const snapshotAt = board.meta?.fetchedAt ?? context.meta?.fetchedAt
       const autoRefreshKey = autoRefresh === 'paused' ? 'autoRefreshPaused' : 'autoRefreshOn'
-      const snapshotRow = sessionId === null ? null : React.createElement('div', { key: 's', style: styles.sub, 'data-orchd-auto-refresh': autoRefresh }, [
+      const snapshotRow = sessionId === null ? null : el('div', { key: 's', style: styles.sub, 'data-orchd-auto-refresh': autoRefresh }, [
         snapshotAt === undefined
           ? null
-          : React.createElement('span', { key: 't' }, `${t('snapshotAt')} ${formatTime(snapshotAt)}`),
-        snapshotAt === undefined ? null : React.createElement('span', { key: 'sep' }, ' · '),
-        React.createElement('span', { key: 'a' }, t(autoRefreshKey))
+          : el('span', { key: 't' }, `${t('snapshotAt')} ${formatTime(snapshotAt)}`),
+        snapshotAt === undefined ? null : el('span', { key: 'sep' }, ' · '),
+        el('span', { key: 'a' }, t(autoRefreshKey))
       ].filter(Boolean))
 
-      const head = React.createElement('div', { style: styles.head }, [
-        React.createElement('div', { key: 'h', style: styles.header }, [
-          React.createElement('h2', { key: 't', style: styles.title }, t('title')),
-          data?.projectName ? React.createElement('span', { key: 'p', style: styles.sub }, data.projectName) : null,
-          React.createElement('span', { key: 'sp', style: styles.spacer }),
+      const head = el('div', { style: styles.head }, [
+        el('div', { key: 'h', style: styles.header }, [
+          el('h2', { key: 't', style: styles.title }, t('title')),
+          data?.projectName ? el('span', { key: 'p', style: styles.sub }, data.projectName) : null,
+          el('span', { key: 'sp', style: styles.spacer }),
           data?.state
-            ? React.createElement('span', { key: 'b', style: { ...styles.badge, color: STATE_TOKEN[data.state] ?? TOKEN.labelSecondary } }, stateLabel(t, data.state))
+            ? el('span', { key: 'b', style: { ...styles.badge, color: STATE_TOKEN[data.state] ?? TOKEN.labelSecondary } }, stateLabel(t, data.state))
             : null,
-          React.createElement('button', {
+          el('button', {
             key: 'r', type: 'button', style: styles.iconButton, onClick: redetect, 'aria-label': t('redetect'), title: t('redetect')
           }, '⟳')
         ].filter(Boolean)),
@@ -3061,29 +3010,29 @@ window.__ModuleLoader__.load({
 
       const bodyContent = (() => {
         if (sessionId === null) {
-          return React.createElement(Card, { title: t('noSession') }, [React.createElement('div', { key: 'h' }, t('noSessionHint'))])
+          return el(Card, { title: t('noSession') }, [el('div', { key: 'h' }, t('noSessionHint'))])
         }
         if (openTask !== null) {
-          return React.createElement(DetailView, { key: `detail-${openTask}`, sessionId, taskId: openTask, t, onBack: () => setOpenTask(null), onOpenTask: setOpenTask })
+          return el(DetailView, { key: `detail-${openTask}`, sessionId, taskId: openTask, t, onBack: () => setOpenTask(null), onOpenTask: setOpenTask })
         }
         if (openIdea !== null) {
-          return React.createElement(IdeaDetail, { key: `idea-${openIdea.id ?? 'x'}`, entry: openIdea, t, onBack: () => setOpenIdea(null) })
+          return el(IdeaDetail, { key: `idea-${openIdea.id ?? 'x'}`, entry: openIdea, t, onBack: () => setOpenIdea(null) })
         }
         if (context.status === 'error') {
-          return React.createElement(Card, { title: t('brokenTitle'), badge: t('stateBroken'), state: 'broken' }, [
-            React.createElement('div', { key: 'm' }, context.error?.message ?? 'unknown error'),
-            isTimeoutError(context.error) ? React.createElement('div', { key: 'to', style: { ...styles.note, padding: '4px 0 0' } }, t('timeoutHint')) : null,
-            React.createElement('pre', { key: 'd', style: styles.pre }, JSON.stringify(context.error?.envelope?.error ?? {}, null, 2)),
-            React.createElement('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
-              React.createElement('button', { key: 'r', type: 'button', style: styles.button, onClick: redetect, 'aria-label': t('retry') }, t('retry'))
+          return el(Card, { title: t('brokenTitle'), badge: t('stateBroken'), state: 'broken' }, [
+            el('div', { key: 'm' }, context.error?.message ?? 'unknown error'),
+            isTimeoutError(context.error) ? el('div', { key: 'to', style: { ...styles.note, padding: '4px 0 0' } }, t('timeoutHint')) : null,
+            el('pre', { key: 'd', style: styles.pre }, JSON.stringify(context.error?.envelope?.error ?? {}, null, 2)),
+            el('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
+              el('button', { key: 'r', type: 'button', style: styles.button, onClick: redetect, 'aria-label': t('retry') }, t('retry'))
             ])
           ].filter(Boolean))
         }
         if (data === null) {
-          return React.createElement('div', { style: styles.note }, t('loading'))
+          return el('div', { style: styles.note }, t('loading'))
         }
         if (data.state !== 'ready') {
-          return React.createElement(StateCard, { key: 'state', data, t, onRedetect: redetect, sessionId })
+          return el(StateCard, { key: 'state', data, t, onRedetect: redetect, sessionId })
         }
 
         // 视图切换（FR-12.1 / FR-13.1）：想法项带「待用户裁决数」徽章（FR-13.2）
@@ -3092,8 +3041,8 @@ window.__ModuleLoader__.load({
         // 所以这里**只用字号与颜色**拉开层级：字更大（13 vs 11.5）、未选中用次级色、
         // 选中用主色 + 半粗 + 描边；形状仍与面板其它控件一致（不引入第二种控件形态）。
         const needsUser = ideas.data?.needsUser
-        const viewSwitch = React.createElement('div', { key: 'views', style: styles.viewSwitchRow, role: 'tablist', 'aria-label': t('title') }, [
-          React.createElement('button', {
+        const viewSwitch = el('div', { key: 'views', style: styles.viewSwitchRow, role: 'tablist', 'aria-label': t('title') }, [
+          el('button', {
             key: 'tasks',
             type: 'button',
             role: 'tab',
@@ -3105,7 +3054,7 @@ window.__ModuleLoader__.load({
               setOpenIdea(null)
             }
           }, t('viewTasks')),
-          React.createElement('button', {
+          el('button', {
             key: 'graph',
             type: 'button',
             role: 'tab',
@@ -3119,7 +3068,7 @@ window.__ModuleLoader__.load({
               setOpenIdea(null)
             }
           }, t('viewGraph')),
-          React.createElement('button', {
+          el('button', {
             key: 'ideas',
             type: 'button',
             role: 'tab',
@@ -3132,11 +3081,11 @@ window.__ModuleLoader__.load({
               setOpenTask(null)
             }
           }, [
-            React.createElement('span', { key: 'l' }, t('viewIdeas')),
+            el('span', { key: 'l' }, t('viewIdeas')),
             // 徽章 = study + questioning；**0 也要显示**（0 本身是「没有事在等你」这个有用信息）
             needsUser === undefined
               ? null
-              : React.createElement('span', {
+              : el('span', {
                   key: 'b',
                   'data-orchd-ideas-badge': String(needsUser),
                   style: {
@@ -3154,31 +3103,31 @@ window.__ModuleLoader__.load({
         // ── 依赖图视图（FR-7）──
         if (view === 'graph') {
           if (graph.status === 'error' && graph.data === null) {
-            return React.createElement(React.Fragment, null, [viewSwitch, React.createElement(Card, {
+            return el(React.Fragment, null, [viewSwitch, el(Card, {
               key: 'gerr', title: t('brokenTitle'), badge: t('stateBroken'), state: 'broken'
             }, [
-              React.createElement('div', { key: 'm' }, graph.error?.message ?? t('graphUnavailable')),
-              isTimeoutError(graph.error) ? React.createElement('div', { key: 'to', style: { ...styles.note, padding: '4px 0 0' } }, t('timeoutHint')) : null,
-              React.createElement('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
-                React.createElement('button', { key: 'r', type: 'button', style: styles.button, onClick: redetect, 'aria-label': t('retry') }, t('retry'))
+              el('div', { key: 'm' }, graph.error?.message ?? t('graphUnavailable')),
+              isTimeoutError(graph.error) ? el('div', { key: 'to', style: { ...styles.note, padding: '4px 0 0' } }, t('timeoutHint')) : null,
+              el('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
+                el('button', { key: 'r', type: 'button', style: styles.button, onClick: redetect, 'aria-label': t('retry') }, t('retry'))
               ])
             ].filter(Boolean))])
           }
           if (graph.data === null) {
-            return React.createElement(React.Fragment, null, [viewSwitch, React.createElement('div', { key: 'load', style: styles.note }, t('loading'))])
+            return el(React.Fragment, null, [viewSwitch, el('div', { key: 'load', style: styles.note }, t('loading'))])
           }
           // 出了错但手里还有上次的图 → 继续显示 + 说明可能过期（与列表同一纪律，FR-9.5）
           const graphStale = graph.status === 'error'
-          return React.createElement(React.Fragment, null, [
+          return el(React.Fragment, null, [
             viewSwitch,
             graphStale
-              ? React.createElement('div', {
+              ? el('div', {
                   key: 'gstale',
                   'data-orchd-graph-stale': 'true',
                   style: { ...styles.note, color: WARN }
                 }, `${t('staleBanner')}${isTimeoutError(graph.error) ? ` ${t('timeoutHint')}` : ''}`)
               : null,
-            React.createElement(DependencyGraph, {
+            el(DependencyGraph, {
               key: 'graph',
               data: graph.data,
               t,
@@ -3188,6 +3137,8 @@ window.__ModuleLoader__.load({
               onBackToAll: () => setGraphFocus(null),
               includeTerminal: graphIncludeTerminal,
               onToggleTerminal: setGraphIncludeTerminal,
+              // §14.3 空态「切到列表看归档」
+              onOpenList: openList,
               // FR-14.9：经典视图 = 强制 chain 请求 + 现行渲染/布局原样（切换器隐藏）
               classic: graphClassic,
               onToggleClassic: (on) => { setGraphClassic(on); if (on || graphLens === 'umbrella' || graphLens === 'files') setGraphFocus(null) },
@@ -3202,21 +3153,21 @@ window.__ModuleLoader__.load({
         // ── 想法视图（FR-13.1）──
         if (view === 'ideas') {
           if (ideas.status === 'error') {
-            return React.createElement(React.Fragment, null, [viewSwitch, React.createElement(Card, {
+            return el(React.Fragment, null, [viewSwitch, el(Card, {
               key: 'ierr', title: t('brokenTitle'), badge: t('stateBroken'), state: 'broken'
             }, [
-              React.createElement('div', { key: 'm' }, ideas.error?.message ?? 'unknown error'),
-              React.createElement('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
-                React.createElement('button', { key: 'r', type: 'button', style: styles.button, onClick: redetect, 'aria-label': t('retry') }, t('retry'))
+              el('div', { key: 'm' }, ideas.error?.message ?? 'unknown error'),
+              el('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
+                el('button', { key: 'r', type: 'button', style: styles.button, onClick: redetect, 'aria-label': t('retry') }, t('retry'))
               ])
             ])])
           }
           if (ideas.data === null) {
-            return React.createElement(React.Fragment, null, [viewSwitch, React.createElement('div', { key: 'load', style: styles.note }, t('loading'))])
+            return el(React.Fragment, null, [viewSwitch, el('div', { key: 'load', style: styles.note }, t('loading'))])
           }
-          return React.createElement(React.Fragment, null, [
+          return el(React.Fragment, null, [
             viewSwitch,
-            React.createElement(IdeasBoard, {
+            el(IdeasBoard, {
               key: 'ideas',
               data: ideas.data,
               filters: ideaFilters,
@@ -3244,18 +3195,18 @@ window.__ModuleLoader__.load({
         }))
 
         // 空态必须点名当前筛选（FR-5.9 / AC-5.8）
-        const emptyFiltered = React.createElement('div', { key: 'empty2', style: styles.note, 'data-orchd-empty': 'filtered' },
+        const emptyFiltered = el('div', { key: 'empty2', style: styles.note, 'data-orchd-empty': 'filtered' },
           filters.mode !== 'all'
             ? `${t('emptyFilteredByStatus')}${t(TASK_STATUS_I18N[filters.mode] ?? 'filterAll')}`
             : (filters.keyword !== ''
                 ? t('emptyFilteredByKeyword').replace('{kw}', filters.keyword)
                 : (filters.modules.length > 0 ? t('emptyFilteredByModule') : t('noTasksAfterFilter'))))
 
-        return React.createElement(React.Fragment, null, [
+        return el(React.Fragment, null, [
           viewSwitch,
           // 引擎暂时不可用但仍有上次快照 → 保留旧数据 + 明确「可能已过期」（FR-9.5）
           boardStale
-            ? React.createElement('div', {
+            ? el('div', {
                 key: 'stale',
                 'data-orchd-stale': 'true',
                 style: { ...styles.note, color: WARN }
@@ -3263,17 +3214,17 @@ window.__ModuleLoader__.load({
             : null,
           // 没有任何快照可用时才整块报错（避免白屏）
           (boardError && !boardStale)
-            ? React.createElement(Card, { key: 'berr', title: t('brokenTitle'), badge: t('stateBroken'), state: 'broken' }, [
-                React.createElement('div', { key: 'm' }, board.error?.message ?? 'unknown error'),
-                isTimeoutError(board.error) ? React.createElement('div', { key: 'to', style: { ...styles.note, padding: '4px 0 0' } }, t('timeoutHint')) : null,
-                React.createElement('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
-                  React.createElement('button', { key: 'r', type: 'button', style: styles.button, onClick: redetect, 'aria-label': t('retry') }, t('retry'))
+            ? el(Card, { key: 'berr', title: t('brokenTitle'), badge: t('stateBroken'), state: 'broken' }, [
+                el('div', { key: 'm' }, board.error?.message ?? 'unknown error'),
+                isTimeoutError(board.error) ? el('div', { key: 'to', style: { ...styles.note, padding: '4px 0 0' } }, t('timeoutHint')) : null,
+                el('div', { key: 'row', style: { ...styles.controlRow, marginTop: 8 } }, [
+                  el('button', { key: 'r', type: 'button', style: styles.button, onClick: redetect, 'aria-label': t('retry') }, t('retry'))
                 ])
               ].filter(Boolean))
             : null,
 
           // 状态条即筛选器（FR-5.2）：8 个互斥模式、单选、再点回全部、0 值可点
-          React.createElement(StatusStripFilter, {
+          el(StatusStripFilter, {
             key: 'strip',
             summary: board.data?.summary ?? data.summary,
             counts: board.data?.counts,
@@ -3285,8 +3236,8 @@ window.__ModuleLoader__.load({
           }),
 
           // 常驻行：搜索 + 视图切换占位 + 筛选弹层入口（FR-5.3/5.4/5.5）
-          React.createElement('div', { key: 'controls', style: styles.controls }, [
-            React.createElement('input', {
+          el('div', { key: 'controls', style: styles.controls }, [
+            el('input', {
               key: 'search',
               type: 'search',
               value: filters.keyword,
@@ -3295,8 +3246,8 @@ window.__ModuleLoader__.load({
               style: styles.input,
               onChange: (event) => setFilters((previous) => ({ ...previous, keyword: event.target.value }))
             }),
-            React.createElement('div', { key: 'row1', style: styles.controlRow }, [
-              React.createElement(FilterPopover, {
+            el('div', { key: 'row1', style: styles.controlRow }, [
+              el(FilterPopover, {
                 key: 'pop',
                 modules,
                 selectedModules: filters.modules,
@@ -3308,7 +3259,7 @@ window.__ModuleLoader__.load({
                 t
               }),
               (filters.mode !== 'all' || filters.keyword !== '' || filters.modules.length > 0)
-                ? React.createElement('button', {
+                ? el('button', {
                     key: 'clear', type: 'button', style: styles.filterEntry, 'aria-label': t('clearFilters'),
                     'data-orchd-chip-clear': 'tasks',
                     onClick: () => setFilters({ keyword: '', mode: 'all', modules: [], sortBy: filters.sortBy })
@@ -3317,7 +3268,7 @@ window.__ModuleLoader__.load({
             ].filter(Boolean))
           ]),
 
-          React.createElement('div', { key: 'count', style: styles.note },
+          el('div', { key: 'count', style: styles.note },
             `${t('countShown')} ${filtered.length} / ${rows.length} ${t('countUnit')} ${t('showingAll')}`),
 
           // 列表 / 空态（FR-9.4：空状态语义必须区分，且点名状态）
@@ -3325,15 +3276,15 @@ window.__ModuleLoader__.load({
           rows.length === 0
             ? (boardError && !boardStale
                 ? null
-                : React.createElement('div', { key: 'empty1', style: styles.note, 'data-orchd-empty': 'project' }, t('noTasksInProject')))
+                : el('div', { key: 'empty1', style: styles.note, 'data-orchd-empty': 'project' }, t('noTasksInProject')))
             : (filtered.length === 0
                 ? emptyFiltered
-                : React.createElement(VirtualList, {
+                : el(VirtualList, {
                     key: 'list',
                     rows: filtered,
                     rowHeight: ROW_HEIGHT,
                     label: t('tasksScrollLabel'),
-                    renderRow: (row, index, offset) => React.createElement(TaskRowItem, {
+                    renderRow: (row, index, offset) => el(TaskRowItem, {
                       key: row.id ?? String(index),
                       row,
                       t,
@@ -3359,43 +3310,43 @@ window.__ModuleLoader__.load({
 
       const diagnostics = data === null
         ? null
-        : React.createElement('div', { key: 'diag', style: { flex: '0 0 auto' } }, [
-            React.createElement('div', { key: 'toggle', style: { ...styles.controlRow, padding: '0 14px 10px' } }, [
-              React.createElement('button', {
+        : el('div', { key: 'diag', style: { flex: '0 0 auto' } }, [
+            el('div', { key: 'toggle', style: { ...styles.controlRow, padding: '0 14px 10px' } }, [
+              el('button', {
                 key: 'b', type: 'button', style: styles.button, 'aria-expanded': showDiagnostics,
                 onClick: () => setShowDiagnostics((value) => !value),
                 'aria-label': t(showDiagnostics ? 'hideDiagnostics' : 'showDiagnostics')
               }, `${showDiagnostics ? '▾' : '▸'} ${t('diagnostics')}`)
             ]),
             showDiagnostics
-              ? React.createElement('section', { key: 'card', style: styles.card }, [
-                  React.createElement('div', { key: 'grid', style: styles.grid }, [
-                    React.createElement(Row, { key: 'root', label: t('project') }, data.root ?? '—'),
-                    React.createElement(Row, { key: 'by', label: t('detectedBy') }, data.resolvedBy ?? '—'),
-                    React.createElement(Row, { key: 'py', label: t('python') }, data.python === null || data.python === undefined ? '—' : `${data.python.path} (${data.python.version})`),
-                    React.createElement(Row, { key: 'layout', label: t('layout') }, data.layout === null || data.layout === undefined ? '—' : String(data.layout.kind)),
-                    React.createElement(Row, { key: 'wt', label: t('mainWorktree') }, data.layout?.mainWorktree ?? '—'),
-                    React.createElement(Row, { key: 'mp', label: t('masterPath') }, data.masterPath ?? '—'),
+              ? el('section', { key: 'card', style: styles.card }, [
+                  el('div', { key: 'grid', style: styles.grid }, [
+                    el(Row, { key: 'root', label: t('project') }, data.root ?? '—'),
+                    el(Row, { key: 'by', label: t('detectedBy') }, data.resolvedBy ?? '—'),
+                    el(Row, { key: 'py', label: t('python') }, data.python === null || data.python === undefined ? '—' : `${data.python.path} (${data.python.version})`),
+                    el(Row, { key: 'layout', label: t('layout') }, data.layout === null || data.layout === undefined ? '—' : String(data.layout.kind)),
+                    el(Row, { key: 'wt', label: t('mainWorktree') }, data.layout?.mainWorktree ?? '—'),
+                    el(Row, { key: 'mp', label: t('masterPath') }, data.masterPath ?? '—'),
                     board.data?.layers === undefined
                       ? null
-                      : React.createElement(Row, { key: 'layers', label: 'layers' }, JSON.stringify(board.data.layers)),
+                      : el(Row, { key: 'layers', label: 'layers' }, JSON.stringify(board.data.layers)),
                     board.data?.orphans === undefined
                       ? null
-                      : React.createElement(Row, { key: 'orphans', label: 'orphans' },
+                      : el(Row, { key: 'orphans', label: 'orphans' },
                           `onlyInState=${board.data.orphans.onlyInState.length} onlyInDefinition=${board.data.orphans.onlyInDefinition.length}`),
                     data.hostProbe === null || data.hostProbe === undefined
                       ? null
-                      : React.createElement(Row, { key: 'host', label: 'host' },
+                      : el(Row, { key: 'host', label: 'host' },
                           `${data.hostProbe.moduleLoadedAt} · pid ${data.hostProbe.pid} · up ${Math.round(data.hostProbe.uptimeMsNow / 1000)}s`),
                     data.devMarker === null || data.devMarker === undefined
                       ? null
-                      : React.createElement(Row, { key: 'dm', label: 'devMarker' }, String(data.devMarker))
+                      : el(Row, { key: 'dm', label: 'devMarker' }, String(data.devMarker))
                   ].filter(Boolean)),
-                  React.createElement('div', { key: 'export', style: { ...styles.controlRow, marginTop: 8 } }, [
-                    React.createElement(CopyButton, { key: 'c', text: diagnosticsSnapshot, t, label: t('exportDiag') }),
-                    React.createElement('span', { key: 'h', style: styles.hint }, t('exportDiagHint'))
+                  el('div', { key: 'export', style: { ...styles.controlRow, marginTop: 8 } }, [
+                    el(CopyButton, { key: 'c', text: diagnosticsSnapshot, t, label: t('exportDiag') }),
+                    el('span', { key: 'h', style: styles.hint }, t('exportDiagHint'))
                   ]),
-                  data.detail === undefined ? null : React.createElement('pre', { key: 'detail', style: styles.pre }, JSON.stringify(data.detail, null, 2))
+                  data.detail === undefined ? null : el('pre', { key: 'detail', style: styles.pre }, JSON.stringify(data.detail, null, 2))
                 ])
               : null
           ].filter(Boolean))
@@ -3404,14 +3355,14 @@ window.__ModuleLoader__.load({
       const archiveWarning = archiveWarningOf(data, t)
       const archiveBanner = archiveWarning === null
         ? null
-        : React.createElement('div', {
+        : el('div', {
             key: 'archive-warning',
             role: 'status',
             'data-orchd-archive-warning': 'true',
             style: styles.archiveBanner
           }, archiveWarning)
 
-      return React.createElement('div', { style: styles.page, 'data-orchd-panel': TAB_ID, 'data-session-id': sessionId ?? '' }, [
+      return el('div', { style: styles.page, 'data-orchd-panel': TAB_ID, 'data-session-id': sessionId ?? '' }, [
         head,
         archiveBanner,
         bodyContent,
@@ -3422,25 +3373,20 @@ window.__ModuleLoader__.load({
     /** tab chip 标题（sidebar.right.pane.tab.title，keyed/session）。 */
     function OrchdTasksTitle(props) {
       const t = typeof props?.t === 'function' ? props.t : (key) => key
-      return React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } }, [
-        React.createElement(OrchdIcon, { key: 'i', size: 14 }),
-        React.createElement('span', null, t('title'))
+      return el('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } }, [
+        el(OrchdIcon, { key: 'i', size: 14 }),
+        el('span', null, t('title'))
       ])
     }
 
     /**
-     * 会话 header 的开关按钮。
-     *
-     * 点击 = 打开 / 关闭（面板正显示时收起右侧栏，否则打开并聚焦本面板）。
-     *
-     * 席位是 conversation.session.header.utilities，kind 为 list、scope 为 session。
-     * 不要用 conversation.session.header.corner：那是 **single** 席位，右侧栏自带的
-     * 「展开」按钮已经占着它；single 在同一优先级下只允许一个占位者，重复注册会抛错
-     * （dsh-client-ui-slots/lib/index.js:170-173）。
+     * 会话 header 的开关按钮：点击 = 打开 / 关闭（正显示时收起右侧栏，否则打开并聚焦）。
+     * 席位 conversation.session.header.utilities（kind=list、scope=session）；corner 是 single 席位，
+     * 右侧栏自带的展开按钮已占着它，重复注册会抛错（dsh-client-ui-slots/lib/index.js:170-173）。
      */
     function OrchdToggleButton(props) {
       const t = typeof props?.t === 'function' ? props.t : (key) => key
-      return React.createElement('button', {
+      return el('button', {
         type: 'button',
         style: styles.iconButton,
         onClick: () => {
@@ -3454,7 +3400,7 @@ window.__ModuleLoader__.load({
         'aria-label': t('toggleLabel'),
         title: t('toggleLabel'),
         'data-orchd-toggle': 'true'
-      }, React.createElement(OrchdIcon, { size: 16 }))
+      }, el(OrchdIcon, { size: 16 }))
     }
 
     function stateLabel(t, state) {
@@ -3562,14 +3508,10 @@ window.__ModuleLoader__.load({
     exports.inject = inject
     exports.apply = apply
     /**
-     * 纯函数出口，**仅供单测**（运行时不使用）。
-     *
-     * 为什么需要：浏览器半侧是手写 bundle、没有构建链（NFR-4.1），
-     * 但筛选/排序承载了 FR-5.2 的全部语义（单选、活跃聚合、0 值），
-     * 必须有单测兜底。测试用 `test/client.test.mjs` 的 `vm` + 假 `window.__ModuleLoader__`
-     * 加载本文件再取这个对象断言。
+     * 纯函数出口，仅供单测（运行时不用）：手写 bundle 没有构建链，但筛选/排序承载 FR-5.2 全部语义，
+     * 必须有单测兜底；test/client.test.mjs 用 vm + 假 __ModuleLoader__ 加载本文件后取此对象。
      */
-    exports.__testables = { applyFilters, sortRows, countByStatus, TASK_STATUS_I18N, ALL_STATUSES, styles, IDEA_STATUSES_UI, IDEA_STATUS_I18N, ideaCommandsFor, ideaDisplayStatus, ideaStatusText, computeThumb, scrollTopForThumbTop, SCROLLBAR_WIDTH, SCROLLBAR_MIN_THUMB, ROW_HEIGHT, IDEA_ROW_HEIGHT, interactionCss, INTERACTION_CSS_TAG, layoutDependencyGraph, graphAnomalyRows, graphNodeLabel, truncateLabel, graphTextUnits, GRAPH_NODE_W, GRAPH_NODE_H, GRAPH_GAP_X, GRAPH_GAP_Y, graphLensOptions, layoutWaveGraph, umbrellaNodeLabel, graphLegendRows, GRAPH_LENS_ORDER, GRAPH_WAVE_LABEL_W, graphLabelMode, GRAPH_SEGMENT_GAP, GRAPH_ZOOM_MIN, GRAPH_ZOOM_MAX, GRAPH_VIEWPORT_FALLBACK, GRAPH_PAD, layoutFilesGraph, graphCriticalPathText, revisionKeyOf, REVISION_POLL_MS, rowBadges, fieldText, latestReviewText, resumeText, designBindingRows, timeGroupRows, detailGroup, archiveWarningOf }
+    exports.__testables = { applyFilters, sortRows, countByStatus, TASK_STATUS_I18N, ALL_STATUSES, styles, IDEA_STATUSES_UI, IDEA_STATUS_I18N, ideaCommandsFor, ideaDisplayStatus, ideaStatusText, computeThumb, scrollTopForThumbTop, SCROLLBAR_WIDTH, SCROLLBAR_MIN_THUMB, ROW_HEIGHT, IDEA_ROW_HEIGHT, interactionCss, INTERACTION_CSS_TAG, layoutDependencyGraph, graphAnomalyRows, graphNodeLabel, truncateLabel, graphTextUnits, GRAPH_NODE_W, GRAPH_NODE_H, GRAPH_GAP_X, GRAPH_GAP_Y, graphLensOptions, layoutWaveGraph, umbrellaNodeLabel, graphLegendRows, GRAPH_LENS_ORDER, GRAPH_WAVE_LABEL_W, graphLabelMode, GRAPH_SEGMENT_GAP, GRAPH_ZOOM_MIN, GRAPH_ZOOM_MAX, GRAPH_VIEWPORT_FALLBACK, GRAPH_PAD, layoutFilesGraph, graphCriticalPathText, revisionKeyOf, REVISION_POLL_MS, rowBadges, fieldText, latestReviewText, resumeText, designBindingRows, timeGroupRows, detailGroup, archiveWarningOf, GraphEmptyState }
     return module.exports
   }
 })
